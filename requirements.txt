@@ -1,4 +1,5 @@
 # Required dependencies
 
 envoy
-tortilla
+hammock
+requests
