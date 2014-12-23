@@ -36,7 +36,7 @@ BIN_DIR = APP_DIR / 'bin'
 def main(argv=sys.argv):
     """Entry point."""
     if os.name != 'posix':
-        print("Only POSIX operating systems are supported.")
+        print("Only POSIX operating systems are supported.", file=sys.stderr)
         return 1
 
     if len(argv[1:]) == 0:
@@ -45,36 +45,9 @@ def main(argv=sys.argv):
 
     gist = argv[1]
     run_gist(gist)
+    if download_gist(gist):
+        run_gist(gist)
 
-    _ensure_path(GISTS_DIR)
-    owner, gist_name = gist.split('/', 1)
-    for gist_json in iter_gists(owner):
-        for filename in gist_json['files'].keys():
-            if filename == gist_name:
-                gist_dir = GISTS_DIR / str(gist_json['id'])
-                if not gist_dir.exists():
-                    gist_dir.mkdir()
-                git_clone_run = _run('git clone %s %s' % (
-                    gist_json['git_pull_url'], gist_dir))
-                if git_clone_run.status_code != 0:
-                    print(git_clone_run.std_err, file=sys.stderr)
-                    return git_clone_run.status_code
-
-                # make sure the gist executable is, in fact, executable
-                gist_exec = gist_dir / filename
-                gist_exec.chmod(int('755', 8))
-
-                # create symlink
-                gist_owner_bin_dir = BIN_DIR / owner
-                _ensure_path(gist_owner_bin_dir)
-                gist_exec_symlink = gist_owner_bin_dir / filename
-                gist_exec_symlink.symlink_to(_path_vector(
-                    from_=gist_exec_symlink,
-                    to=gist_exec))
-
-                run_gist(gist)
-                print("Fatal error")
-                return 1
     print("Gist %s/%s not found" % (owner, gist_name))
     return 1
 
@@ -90,6 +63,41 @@ def run_gist(gist):
     if gist_exec_symlink.exists():  # also checks if symlink is not broken
         cmd = bytes(gist_exec_symlink)
         os.execv(cmd, [cmd])
+
+
+def download_gist(gist):
+    """Download the gist specified by owner/name string.
+
+    :return: Whether the gist has been successfully downloaded
+    """
+    owner, gist_name = gist.split('/', 1)
+    for gist_json in iter_gists(owner):
+        for filename in gist_json['files'].keys():
+            if filename != gist_name:
+                continue
+
+            # clone the gist's repository into directory named after gist ID
+            gist_dir = GISTS_DIR / str(gist_json['id'])
+            _ensure_path(gist_dir)
+            git_clone_run = _run(
+                'git clone %s %s' % (gist_json['git_pull_url'], gist_dir))
+            if git_clone_run.status_code != 0:
+                _join(git_clone_run)
+
+            # make sure the gist executable is, in fact, executable
+            gist_exec = gist_dir / filename
+            gist_exec.chmod(int('755', 8))
+
+            # create symlink from BIN_DIR/<owner>/<gist_name>
+            # to the gist's executable file
+            gist_owner_bin_dir = BIN_DIR / owner
+            _ensure_path(gist_owner_bin_dir)
+            gist_link = gist_owner_bin_dir / filename
+            gist_link.symlink_to(_path_vector(from_=gist_link, to=gist_exec))
+
+            return True
+
+    return False
 
 
 # GitHub API
@@ -149,6 +157,17 @@ def _run(cmd, *args, **kwargs):
     This is necessary to fix some Envoy's command parsing malfeasances.
     """
     return envoy.run(bytes(cmd), *args, **kwargs)
+
+
+def join(process):
+    """Join the process, i.e. pipe its output to our own standard stream
+    and relay its exit code back to the system.
+
+    :param process: envoy's process result object
+    """
+    sys.stdout.write(process.std_out)
+    sys.stderr.write(process.std_err)
+    raise SystemExit(process.status_code)
 
 
 def _json(response):
