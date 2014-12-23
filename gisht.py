@@ -2,7 +2,7 @@
 """
 gisht
 """
-from __future__ import print_function
+from __future__ import print_function, unicode_literals
 
 from collections import OrderedDict
 import os
@@ -39,10 +39,10 @@ def main(argv=sys.argv):
         print("No gist specified.", file=sys.stderr)
         return 1
 
-    gist_exec_symlink = GISTS_DIR / argv[1]
+    gist_exec_symlink = BIN_DIR / argv[1]
     if gist_exec_symlink.exists():
         # TODO(xion): check if the symlink is not broken
-        gist_run = envoy.run(str(gist_exec_symlink))
+        gist_run = _run(gist_exec_symlink)
         return gist_run.status_code
 
     if not GISTS_DIR.exists():
@@ -55,7 +55,7 @@ def main(argv=sys.argv):
                 gist_dir = GISTS_DIR / str(gist_json['id'])
                 if not gist_dir.exists():
                     gist_dir.mkdir()
-                git_clone_run = envoy.run('git clone %s %s' % (
+                git_clone_run = _run('git clone %s %s' % (
                     gist_json['git_pull_url'], gist_dir))
                 if git_clone_run.status_code != 0:
                     print(git_clone_run.std_err, file=sys.stderr)
@@ -104,6 +104,15 @@ def iter_gists(owner):
 
 
 # Utility functions
+
+def _run(cmd, *args, **kwargs):
+    """Wrapper around ``envoy.run`` that ensures the passed command string
+    is NOT Unicode string, but a plain buffer of bytes.
+
+    This is necessary to fix some Envoy's command parsing malfeasances.
+    """
+    return envoy.run(bytes(cmd), *args, **kwargs)
+
 
 def _json(response):
     """Interpret given Requests' response object as JSON."""
