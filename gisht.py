@@ -112,6 +112,9 @@ def iter_gists(owner):
     :return: Iterable (generator) of parsed JSON objects (dictionaries)
     :raises: :class:`requests.exception.HTTPError`
     """
+    if type(owner).__name__ not in ('str', 'unicode'):
+        raise TypeError("expected a string")
+
     def generator():
         github = GitHub()
         gists_url = str(github.users(owner).gists)

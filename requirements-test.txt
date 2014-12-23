@@ -1,3 +1,8 @@
 # Test-only dependencies
 
 pytest
+pytest-cov
+responses
+
+# TODO(xion): settle on Taipan from PyPI rather than pulling it from GitHub
+git+https://github.com/Xion/taipan.git#egg=taipan

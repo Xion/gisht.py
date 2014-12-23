@@ -2,4 +2,4 @@
 
 envoy
 hammock
-requests
+requests>=1.0
