@@ -45,18 +45,18 @@ def main(argv=sys.argv):
         gist_run = envoy.run(str(gist_exec_symlink))
         return gist_run.status_code
 
-    # TODO(xion): extract to separate function and support paging
+    if not GISTS_DIR.exists():
+        GISTS_DIR.mkdir(parents=True)
+
     owner, gist_name = argv[1].split('/', 1)
-    github = GitHub()
-    gists_response = requests.get(str(github.users(owner).gists))
-    gists_response.raise_for_status()
-    for gist_json in _json(gists_response):
+    for gist_json in iter_gists(owner):
         for filename in gist_json['files'].keys():
             if filename == gist_name:
-                # TODO(xion): ensure the GISTS_DIR path exists
+                gist_dir = GISTS_DIR / str(gist_json['id'])
+                if not gist_dir.exists():
+                    gist_dir.mkdir()
                 git_clone_run = envoy.run('git clone %s %s' % (
-                    gist_json['git_pull_url'],
-                    GISTS_DIR / str(gist_json['id'])))
+                    gist_json['git_pull_url'], gist_dir))
                 if git_clone_run.status_code != 0:
                     print(git_clone_run.std_err, file=sys.stderr)
                     return git_clone_run.status_code
@@ -67,12 +67,40 @@ def main(argv=sys.argv):
     return 1
 
 
+# GitHub API
+
 class GitHub(Hammock):
     """Client for GitHub REST API."""
     API_URL = 'https://api.github.com'
 
+    #: Size of the GitHub response page in items (e.g. gists).
+    RESPONSE_PAGE_SIZE = 50
+
     def __init__(self, *args, **kwargs):
         super(GitHub, self).__init__(self.API_URL, *args, **kwargs)
+
+
+def iter_gists(owner):
+    """Iterate over gists owned by given user.
+
+    :param owner: GitHub user's name
+    :return: Iterable (generator) of parsed JSON objects (dictionaries)
+    :raises: :class:`requests.exception.HTTPError`
+    """
+    def generator():
+        github = GitHub()
+        gists_url = str(github.users(owner).gists)
+        while gists_url:
+            gists_response = requests.get(
+                gists_url, params={'per_page': GitHub.RESPONSE_PAGE_SIZE})
+            gists_response.raise_for_status()
+
+            for gist_json in _json(gists_response):
+                yield gist_json
+
+            gists_url = gists_response.links.get('next', {}).get('url')
+
+    return generator()
 
 
 # Utility functions
