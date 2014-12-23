@@ -44,25 +44,30 @@ def main(argv=sys.argv):
         return 1
 
     gist = argv[1]
-    run_gist(gist)
+    args = argv[argv.index('--') + 1:] if '--' in argv else []
+
+    # TODO(xion): add a command line flag to always fetch the gist
+    # (removing the existing one if necessary, or doing a `git pull`)
+    run_gist(gist, args)
     if download_gist(gist):
-        run_gist(gist)
+        run_gist(gist, args)
 
     print("Gist %s/%s not found" % (owner, gist_name))
     return 1
 
 
-def run_gist(gist):
+def run_gist(gist, args=()):
     """Run the gist specified by owner/name string, if it exists.
 
     This function does not return upon success, because the whole process
     is replaced by the gist's executable.
+
+    :param args: Arguments to pass to the gist
     """
-    # TODO(xion): pass arguments
     gist_exec_symlink = BIN_DIR / gist
     if gist_exec_symlink.exists():  # also checks if symlink is not broken
         cmd = bytes(gist_exec_symlink)
-        os.execv(cmd, [cmd])
+        os.execv(cmd, [cmd] + list(args))
 
 
 def download_gist(gist):
