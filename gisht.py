@@ -39,6 +39,9 @@ def main(argv=sys.argv):
         print("Only POSIX operating systems are supported.", file=sys.stderr)
         return 1
 
+    # TODO(xion): show warnings about executing untrusted code
+    # if APP_DIR does not exist (and then create it when user acknowledges)
+
     if len(argv[1:]) == 0:
         print("No gist specified.", file=sys.stderr)
         return 1
@@ -52,7 +55,7 @@ def main(argv=sys.argv):
     if download_gist(gist):
         run_gist(gist, args)
 
-    print("Gist %s/%s not found" % (owner, gist_name))
+    print("Gist %s not found" % (gist,), file=sys.stderr)
     return 1
 
 
