@@ -35,20 +35,19 @@ BIN_DIR = APP_DIR / 'bin'
 
 def main(argv=sys.argv):
     """Entry point."""
+    if os.name != 'posix':
+        print("Only POSIX operating systems are supported.")
+        return 1
+
     if len(argv[1:]) == 0:
         print("No gist specified.", file=sys.stderr)
         return 1
 
-    gist_exec_symlink = BIN_DIR / argv[1]
-    if gist_exec_symlink.exists():
-        # TODO(xion): check if the symlink is not broken
-        gist_run = _run(gist_exec_symlink)
-        return gist_run.status_code
+    gist = argv[1]
+    run_gist(gist)
 
-    if not GISTS_DIR.exists():
-        GISTS_DIR.mkdir(parents=True)
-
-    owner, gist_name = argv[1].split('/', 1)
+    _ensure_path(GISTS_DIR)
+    owner, gist_name = gist.split('/', 1)
     for gist_json in iter_gists(owner):
         for filename in gist_json['files'].keys():
             if filename == gist_name:
@@ -60,11 +59,37 @@ def main(argv=sys.argv):
                 if git_clone_run.status_code != 0:
                     print(git_clone_run.std_err, file=sys.stderr)
                     return git_clone_run.status_code
-                # TODO(xion): symlink main file in BIN_DIR
-                # TODO(xion): run the gist
-                return 0
+
+                # make sure the gist executable is, in fact, executable
+                gist_exec = gist_dir / filename
+                gist_exec.chmod(int('755', 8))
+
+                # create symlink
+                gist_owner_bin_dir = BIN_DIR / owner
+                _ensure_path(gist_owner_bin_dir)
+                gist_exec_symlink = gist_owner_bin_dir / filename
+                gist_exec_symlink.symlink_to(_path_vector(
+                    from_=gist_exec_symlink,
+                    to=gist_exec))
+
+                run_gist(gist)
+                print("Fatal error")
+                return 1
     print("Gist %s/%s not found" % (owner, gist_name))
     return 1
+
+
+def run_gist(gist):
+    """Run the gist specified by owner/name string, if it exists.
+
+    This function does not return upon success, because the whole process
+    is replaced by the gist's executable.
+    """
+    # TODO(xion): pass arguments
+    gist_exec_symlink = BIN_DIR / gist
+    if gist_exec_symlink.exists():  # also checks if symlink is not broken
+        cmd = bytes(gist_exec_symlink)
+        os.execv(cmd, [cmd])
 
 
 # GitHub API
@@ -105,6 +130,15 @@ def iter_gists(owner):
 
 # Utility functions
 
+def _ensure_path(path):
+    """Ensures given path exists, creating all necessary directory levels.
+    Does nothing otherwise.
+    """
+    path = Path(path)
+    if not path.exists():
+        path.mkdir(parents=True)
+
+
 def _run(cmd, *args, **kwargs):
     """Wrapper around ``envoy.run`` that ensures the passed command string
     is NOT Unicode string, but a plain buffer of bytes.
@@ -117,6 +151,30 @@ def _run(cmd, *args, **kwargs):
 def _json(response):
     """Interpret given Requests' response object as JSON."""
     return response.json(object_pairs_hook=OrderedDict)
+
+
+def _path_vector(from_, to):
+    """Return a 'path vector' from given path to the other, i.e.
+    the argument of ``cd`` that'd take the user from the source
+    directly to target.
+    """
+    from_, to = map(Path, (from_, to))
+
+    # TODO(xion): consider using http://stackoverflow.com/a/21499676/434799
+    # instead of standard os.commonprefix (we don't run into the edge case
+    # of the latter yet)
+    common_prefix = os.path.commonprefix(list(map(str, (from_, to))))
+
+    # compute the number of '..' segments that are necessary to go
+    # from source up to the common prefix
+    prefix_wrt_source = Path(from_).relative_to(common_prefix)
+    pardir_count = len(prefix_wrt_source.parts)
+    if not from_.is_dir():
+        pardir_count -= 1
+
+    # join those '..' segments with relative path from common prefix to target
+    target_wrt_prefix = Path(to).relative_to(common_prefix)
+    return Path(*([os.path.pardir] * pardir_count)) / target_wrt_prefix
 
 
 if __name__ == '__main__':
