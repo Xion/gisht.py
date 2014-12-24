@@ -4,6 +4,7 @@ gisht
 """
 from __future__ import print_function, unicode_literals
 
+import argparse
 from collections import OrderedDict
 import os
 from pathlib import Path
@@ -42,21 +43,44 @@ def main(argv=sys.argv):
     # TODO(xion): show warnings about executing untrusted code
     # if APP_DIR does not exist (and then create it when user acknowledges)
 
-    if len(argv[1:]) == 0:
-        print("No gist specified.", file=sys.stderr)
-        return 1
+    # treat everything after -- in the command line as arguments to be passed
+    # to the gist executable itself (rather than be parsed by us)
+    gist_argv = []
+    if '--' in argv:
+        double_dash_pos = argv.index('--')
+        gist_argv = argv[double_dash_pos + 1:]
+        argv = argv[:double_dash_pos]
 
-    gist = argv[1]
-    args = argv[argv.index('--') + 1:] if '--' in argv else []
+    args = parse_argv(argv)
+    gist = args.gist
 
     # TODO(xion): add a command line flag to always fetch the gist
     # (removing the existing one if necessary, or doing a `git pull`)
-    run_gist(gist, args)
+    run_gist(gist, gist_argv)
     if download_gist(gist):
-        run_gist(gist, args)
+        run_gist(gist, gist_argv)
 
     print("Gist %s not found" % (gist,), file=sys.stderr)
     return 1
+
+
+def parse_argv(argv):
+    """Parse command line arguments.
+
+    :param argv: List of command line argument strings,
+                 *including* the program name in argv[0]
+
+    :return: Parse result from :func:`argparse.ArgumentParser.parse_args`
+    """
+    parser = argparse.ArgumentParser(
+        description="Download & run GitHub gists with a single command",
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+
+    parser.add_argument('gist', type=str,
+                        help="Gist to run as <owner>/<name>, e.g. JohnDoe/foo",
+                        metavar="GIST")
+
+    return parser.parse_args(argv[1:])
 
 
 def run_gist(gist, args=()):
@@ -69,6 +93,9 @@ def run_gist(gist, args=()):
     """
     gist_exec_symlink = BIN_DIR / gist
     if gist_exec_symlink.exists():  # also checks if symlink is not broken
+        # TODO(xion): check for the existence of proper shebang,
+        # and if it's not there, deduce correct interpreter based on extension
+        # of the symlinks target
         cmd = bytes(gist_exec_symlink)
         os.execv(cmd, [cmd] + list(args))
 
