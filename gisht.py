@@ -64,7 +64,11 @@ def main(argv=sys.argv):
         if download_gist(gist):
             run_gist(gist, gist_args)
     except requests.exceptions.HTTPError as e:
-        _error("HTTP error: %s", e, exitcode=os.EX_UNAVAILABLE)
+        if e.response.status_code == 404:
+            _error("user '%s' not found", gist.split('/')[0],
+                   exitcode=os.EX_UNAVAILABLE)
+        else:
+            _error("HTTP error: %s", e, exitcode=os.EX_UNAVAILABLE)
 
     _error("gist %s not found", gist, exitcode=os.EX_DATAERR)
 
@@ -175,8 +179,6 @@ def iter_gists(owner):
         while gists_url:
             gists_response = requests.get(
                 gists_url, params={'per_page': GitHub.RESPONSE_PAGE_SIZE})
-            if gists_response.status_code == 404:
-                break
             gists_response.raise_for_status()
 
             for gist_json in _json(gists_response):
