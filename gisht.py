@@ -37,18 +37,17 @@ BIN_DIR = APP_DIR / 'bin'
 def main(argv=sys.argv):
     """Entry point."""
     if os.name != 'posix':
-        print("Only POSIX operating systems are supported.", file=sys.stderr)
-        return 1
+        _error("only POSIX operating systems are supported")
 
     # TODO(xion): show warnings about executing untrusted code
     # if APP_DIR does not exist (and then create it when user acknowledges)
 
     # treat everything after -- in the command line as arguments to be passed
     # to the gist executable itself (rather than be parsed by us)
-    gist_argv = []
+    gist_args = []
     if '--' in argv:
-        double_dash_pos = argv.index('--')
-        gist_argv = argv[double_dash_pos + 1:]
+        double_dash_pos = len(argv) - 1 - argv[::-1].index('--')  # last occur.
+        gist_args = argv[double_dash_pos + 1:]
         argv = argv[:double_dash_pos]
 
     args = parse_argv(argv)
@@ -56,12 +55,11 @@ def main(argv=sys.argv):
 
     # TODO(xion): add a command line flag to always fetch the gist
     # (removing the existing one if necessary, or doing a `git pull`)
-    run_gist(gist, gist_argv)
+    run_gist(gist, gist_args)
     if download_gist(gist):
-        run_gist(gist, gist_argv)
+        run_gist(gist, gist_args)
 
-    print("Gist %s not found" % (gist,), file=sys.stderr)
-    return 1
+    _error("gist %s not found", gist)
 
 
 def parse_argv(argv):
@@ -74,8 +72,10 @@ def parse_argv(argv):
     """
     parser = argparse.ArgumentParser(
         description="Download & run GitHub gists with a single command",
-        formatter_class=argparse.RawDescriptionHelpFormatter)
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        usage="%(prog)s GIST [-- GIST_ARGS]")
 
+    parser.add_argument('--version', action='version', version=__version__)
     parser.add_argument('gist', type=str,
                         help="Gist to run as <owner>/<name>, e.g. JohnDoe/foo",
                         metavar="GIST")
@@ -176,6 +176,16 @@ def iter_gists(owner):
 
 # Utility functions
 
+def _error(msg, *args, **kwargs):
+    """Output an error message to stderr and end the program.
+    :param exitcode: Optional keyword argument to specify the exit code
+    """
+    if args:
+        msg = msg % args
+    print("%s: error: %s" % (sys.argv[0], msg), file=sys.stderr)
+    raise SystemExit(kwargs.pop('exitcode', 1))
+
+
 def _ensure_path(path):
     """Ensures given path exists, creating all necessary directory levels.
     Does nothing otherwise.
@@ -194,7 +204,7 @@ def _run(cmd, *args, **kwargs):
     return envoy.run(bytes(cmd), *args, **kwargs)
 
 
-def join(process):
+def _join(process):
     """Join the process, i.e. pipe its output to our own standard stream
     and relay its exit code back to the system.
 
