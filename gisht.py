@@ -37,7 +37,8 @@ BIN_DIR = APP_DIR / 'bin'
 def main(argv=sys.argv):
     """Entry point."""
     if os.name != 'posix':
-        _error("only POSIX operating systems are supported")
+        _error("only POSIX operating systems are supported",
+               exitcode=os.EX_UNAVAILABLE)
 
     # TODO(xion): show warnings about executing untrusted code
     # if APP_DIR does not exist (and then create it when user acknowledges)
@@ -56,10 +57,13 @@ def main(argv=sys.argv):
     # TODO(xion): add a command line flag to always fetch the gist
     # (removing the existing one if necessary, or doing a `git pull`)
     run_gist(gist, gist_args)
-    if download_gist(gist):
-        run_gist(gist, gist_args)
+    try:
+        if download_gist(gist):
+            run_gist(gist, gist_args)
+    except requests.exceptions.HTTPError as e:
+        _error("HTTP error: %s", e, exitcode=os.EX_UNAVAILABLE)
 
-    _error("gist %s not found", gist)
+    _error("gist %s not found", gist, exitcode=os.EX_DATAERR)
 
 
 def parse_argv(argv):
@@ -164,6 +168,8 @@ def iter_gists(owner):
         while gists_url:
             gists_response = requests.get(
                 gists_url, params={'per_page': GitHub.RESPONSE_PAGE_SIZE})
+            if gists_response.status_code == 404:
+                break
             gists_response.raise_for_status()
 
             for gist_json in _json(gists_response):
@@ -180,9 +186,9 @@ def _error(msg, *args, **kwargs):
     """Output an error message to stderr and end the program.
     :param exitcode: Optional keyword argument to specify the exit code
     """
-    if args:
-        msg = msg % args
-    print("%s: error: %s" % (sys.argv[0], msg), file=sys.stderr)
+    msg = msg % args if args else msg
+    print("%s: error: %s" % (os.path.basename(sys.argv[0]), msg),
+          file=sys.stderr)
     raise SystemExit(kwargs.pop('exitcode', 1))
 
 

@@ -2,7 +2,6 @@
 Tests for the gisht.py script.
 """
 import json
-import os
 
 from requests.exceptions import HTTPError
 import responses
