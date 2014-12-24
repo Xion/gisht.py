@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 """
 gisht
+
+* This program is free software, see LICENSE file for details. *
 """
 from __future__ import print_function, unicode_literals
 
@@ -18,7 +20,7 @@ import requests
 __version__ = "0.0.1"
 __description__ = "Gists in the shell"
 __author__ = "Karol Kuczmarski"
-__license__ = "Simplified BSD"
+__license__ = "GPLv3"
 
 
 #: Main application's directory.
