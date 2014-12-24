@@ -53,6 +53,7 @@ def main(argv=sys.argv):
         gist_args = argv[double_dash_pos + 1:]
         argv = argv[:double_dash_pos]
 
+    # TODO(xion): when only username is given, we should list all their gists
     args = parse_argv(argv)
     gist = args.gist
 
@@ -85,7 +86,11 @@ def parse_argv(argv):
     parser.add_argument('gist', type=str,
                         help="Gist to run as <owner>/<name>, e.g. JohnDoe/foo",
                         metavar="GIST")
+    # TODO(xion): better error handling when GIST has invalid value
+    # TODO(xion): add --local flag to only run gists
+    # that's been already downloaded
 
+    # TODO(xion): support reading default parameter values from ~/.gishtrc
     return parser.parse_args(argv[1:])
 
 
