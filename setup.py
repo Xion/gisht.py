@@ -75,8 +75,8 @@ def read_requirements(filename='requirements.txt'):
 SCRIPT = 'gisht.py'
 
 install_requires = read_requirements()
-if sys.version_info < (3, 0):
-    install_requires.extend(read_requirements('py2'))
+if sys.version_info < (3, 4):
+    install_requires.extend(read_requirements('py33'))
 
 tags = read_tags(SCRIPT)
 __doc__ = __doc__.format(**tags)
