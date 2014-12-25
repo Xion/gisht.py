@@ -3,7 +3,15 @@
 gisht
 =====
 
-{description}
+With *gisht*, you can run scripts published as GitHub gists
+with a single command::
+
+    gisht Xion/git-today
+
+Behind the scenes, *gisht* will fetch the gist, cache it locally,
+and run its code.
+
+Refer to project's website for more information.
 """
 import ast
 import os
