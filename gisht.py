@@ -88,7 +88,7 @@ def parse_argv(argv):
 
     parser.add_argument('--version', action='version', version=__version__)
     parser.add_argument('gist', type=str,
-                        help="Gist to run as <owner>/<name>, e.g. JohnDoe/foo",
+                        help="Gist to run as <owner>/<name>, e.g. Octocat/foo",
                         metavar="GIST")
     # TODO(xion): better error handling when GIST has invalid value
     # TODO(xion): add --local flag to only run gists
