@@ -84,13 +84,27 @@ def parse_argv(argv):
     parser = argparse.ArgumentParser(
         description="Download & run GitHub gists with a single command",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        usage="%(prog)s GIST [-- GIST_ARGS]")
-
+        usage="%(prog)s GIST [-- GIST_ARGS]",
+    )
     parser.add_argument('--version', action='version', version=__version__)
-    parser.add_argument('gist', type=str,
+
+    def gist(value):
+        """Converter/validator for the GIST command line argument."""
+        try:
+            owner, gist_name = value.split('/')
+        except ValueError:
+            raise argparse.ArgumentTypeError(
+                "%r is not a valid gist reference; "
+                "try '<owner>/`<name>`" %(value,))
+        if owner and gist_name:
+            return value
+        else:
+            raise argparse.ArgumentTypeError(
+                "neither gist owner or name can be empty (got %r)" % (value,))
+    parser.add_argument('gist', type=gist,
                         help="Gist to run as <owner>/<name>, e.g. Octocat/foo",
                         metavar="GIST")
-    # TODO(xion): better error handling when GIST has invalid value
+
     # TODO(xion): add --local flag to only run gists
     # that's been already downloaded
 
