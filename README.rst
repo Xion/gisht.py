@@ -4,8 +4,20 @@ gisht
 *Gists in the shell*
 
 
-|Build Status|
+|Version| |Development Status| |Python Versions| |License| |Build Status|
 
+.. |Version| image:: https://img.shields.io/pypi/v/gisht.svg?style=flat
+    :target: https://pypi.python.org/pypi/gisht
+    :alt: Version
+.. |Development Status| image:: https://pypip.in/status/gisht/badge.svg?style=flat
+    :target: https://pypi.python.org/pypi/gisht/
+    :alt: Development Status
+.. |Python Versions| image:: https://pypip.in/py_versions/gisht/badge.svg?style=flat
+    :target: https://pypi.python.org/pypi/gisht
+    :alt: Python versions
+.. |License| image:: https://img.shields.io/pypi/l/gisht.svg?style=flat
+    :target: https://github.com/Xion/gisht/blob/master/LICENSE
+    :alt: License
 .. |Build Status| image:: https://img.shields.io/travis/Xion/gisht.svg?style=flat
     :target: https://travis-ci.org/Xion/gisht
     :alt: Build Status
