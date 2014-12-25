@@ -103,7 +103,7 @@ def parse_argv(argv):
         except ValueError:
             raise argparse.ArgumentTypeError(
                 "%r is not a valid gist reference; "
-                "try '<owner>/`<name>`" %(value,))
+                "try '<owner>/`<name>`" % (value,))
         if owner and gist_name:
             return value
         else:
