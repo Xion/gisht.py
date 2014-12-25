@@ -86,15 +86,14 @@ def parse_argv(argv):
 
     :return: Parse result from :func:`argparse.ArgumentParser.parse_args`
     """
-    # TODO(xion): organize arguments in groups: GIST & --local in one,
-    # miscellaneous, like --version, in other
-
     parser = argparse.ArgumentParser(
         description="Download & run GitHub gists with a single command",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        usage="%(prog)s GIST [-- GIST_ARGS]",
+        usage="%(prog)s [<flags>] GIST [-- GIST_ARGS]",
+        add_help=False,
     )
-    parser.add_argument('--version', action='version', version=__version__)
+    gist_group = parser.add_argument_group("Gist specification")
+    misc_group = parser.add_argument_group("Miscellaneous")
 
     def gist(value):
         """Converter/validator for the GIST command line argument."""
@@ -109,15 +108,19 @@ def parse_argv(argv):
         else:
             raise argparse.ArgumentTypeError(
                 "neither gist owner or name can be empty (got %r)" % (value,))
-    parser.add_argument('gist', type=gist,
-                        help="Gist to run as <owner>/<name>, e.g. Octocat/foo",
-                        metavar="GIST")
-
-    # TODO(xion): consider a short version of this option, -l
+    gist_group.add_argument('gist', type=gist,
+                            help="gist to run, specified as <owner>/<name> "
+                                 "(e.g. Octocat/foo)",
+                            metavar="GIST")
+    gist_group.add_argument('--local', default=False, action='store_true',
+                            help="only run the gist if it's available locally "
+                                 "(do not fetch it from GitHub)")
+    # TODO(xion): consider adding a short version of --local option, -l
     # (unless we also introduce something like --list)
-    parser.add_argument('--local', default=False, action='store_true',
-                        help="Only run the gist if it's available locally "
-                             "(do not fetch it from GitHub)")
+
+    misc_group.add_argument('--version', action='version', version=__version__)
+    misc_group.add_argument('-h', '--help', action='help',
+                            help="show this help message and exit")
 
     # TODO(xion): support reading default parameter values from ~/.gishtrc
     return parser.parse_args(argv[1:])
