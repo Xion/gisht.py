@@ -28,12 +28,26 @@ With *gisht*, you can run scripts published as GitHub gists with a single comman
     gisht Xion/git-today
 
 Behind the scenes, *gisht* will fetch the gist, cache it locally, and run its code.
+Magic!
 
 
 Installation
 ~~~~~~~~~~~~
 
-Install *gisht* from PyPI using PIP::
+Automatic
+---------
+
+If you trust me, you can use the ``install.sh`` script to install *gisht*::
+
+    curl -L https://github.com/Xion/gisht/raw/master/install.sh | sh
+
+It will place *gisht* in ``/usr/local`` directory and expose ``gisht`` command
+to all users in the system (assuming ``/usr/local/bin`` is in their ``$PATH``).
+
+Manual
+------
+
+Alternatively, you can install *gisht*  manually using PIP::
 
     pip install gisht
 
@@ -49,7 +63,7 @@ etc.::
 
     alias gisht='/usr/local/gisht/bin/gisht.py'
 
-A more convenient installation procedure will be likely offered in the future.
+The automatic installation script essentially does all of the above.
 
 
 Usage
