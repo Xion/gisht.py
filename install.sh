@@ -22,6 +22,9 @@ main() {
     install_python_package
 
     create_runner_script
+
+    log "INFO: Installation complete."
+    log "$APP should be available under \`$APP\` command"
 }
 
 ensure_virtualenv() {
@@ -29,7 +32,8 @@ ensure_virtualenv() {
     if [ -z "$VIRTUAL_ENV" ]; then
         require virtualenv
 
-        virtualenv "$VIRTUALENV_DIR"
+        log "INFO: Creating new virtualenv for $APP..."
+        virtualenv --quiet "$VIRTUALENV_DIR" --no-site-packages
         source "$VIRTUALENV_DIR/bin/activate"
     else
         log "WARN: Installing within existing virtualenv: $VIRTUAL_ENV"
@@ -37,6 +41,8 @@ ensure_virtualenv() {
 }
 
 install_python_package() {
+    log "INFO: Installing $APP Python package..."
+
     # either install the package from current directory
     # or get it directly from PyPI
     if [ -f "./$APP" ] || [ -f "./$APP/__init__.py" ]; then
@@ -47,13 +53,15 @@ install_python_package() {
 }
 
 create_runner_script() {
+    log "INFO: Creating runner script in %s..." "$(dirname "$RUNNER_SCRIPT")"
+
     # create simple wrapper script that activates the virtualenv
     # and runs the application
-    cat >"$RUNNER_SCRIPT" <<- END
-        #!/bin/sh
-        source "$VIRTUALENV_DIR/bin/activate"
-        $APP "\$@"
-    END
+    cat >"$RUNNER_SCRIPT" <<END
+#!/bin/sh
+source "$VIRTUAL_ENV/bin/activate"
+$APP "\$@"
+END
     chmod a+x "$RUNNER_SCRIPT"
 }
 
@@ -72,7 +80,8 @@ require() {
 
 log() {
     local fmt="$1" ; shift
-    printf >&2 "\n>>> $fmt\n" "$@"
+    printf >&2 ">>> $fmt\n" "$@"
 }
+
 
 main "$@"
