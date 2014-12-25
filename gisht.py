@@ -57,9 +57,14 @@ def main(argv=sys.argv):
     args = parse_argv(argv)
     gist = args.gist
 
+    # try to run the locally cached copy of the gist first
+    run_gist(gist, gist_args)
+    if args.local:
+        _error("gist %s is not available locally", gist,
+               exitcode=os.EX_NOINPUT)
+
     # TODO(xion): add a command line flag to always fetch the gist
     # (removing the existing one if necessary, or doing a `git pull`)
-    run_gist(gist, gist_args)
     try:
         if download_gist(gist):
             run_gist(gist, gist_args)
@@ -81,6 +86,9 @@ def parse_argv(argv):
 
     :return: Parse result from :func:`argparse.ArgumentParser.parse_args`
     """
+    # TODO(xion): organize arguments in groups: GIST & --local in one,
+    # miscellaneous, like --version, in other
+
     parser = argparse.ArgumentParser(
         description="Download & run GitHub gists with a single command",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -105,8 +113,11 @@ def parse_argv(argv):
                         help="Gist to run as <owner>/<name>, e.g. Octocat/foo",
                         metavar="GIST")
 
-    # TODO(xion): add --local flag to only run gists
-    # that's been already downloaded
+    # TODO(xion): consider a short version of this option, -l
+    # (unless we also introduce something like --list)
+    parser.add_argument('--local', default=False, action='store_true',
+                        help="Only run the gist if it's available locally "
+                             "(do not fetch it from GitHub)")
 
     # TODO(xion): support reading default parameter values from ~/.gishtrc
     return parser.parse_args(argv[1:])
