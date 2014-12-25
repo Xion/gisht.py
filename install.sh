@@ -15,6 +15,11 @@ RUNNER_SCRIPT="/usr/local/bin/$APP"
 
 
 main() {
+    if which "$APP" >/dev/null; then
+        log "FATAL: $APP is already installed."
+        exit
+    fi
+
     require python "Python not found -- aborting!"
     require pip "PIP not found -- please fix your Python installation!"
 
