@@ -69,6 +69,9 @@ def main(argv=sys.argv):
                 _error("HTTP error: %s", e, exitcode=os.EX_UNAVAILABLE)
 
     if args.print_:
+        if gist_args:
+            _error("gist arguments are not allowed when printing gist source",
+                   exitcode=os.EX_USAGE)
         print_gist(gist)
     else:
         run_gist(gist, gist_args)
@@ -153,7 +156,7 @@ def create_argv_parser():
     gist_group.add_argument('-p', '--print', dest='print_',
                             default=False, action='store_true',
                             help="print the gist source to standard output "
-                                 "rather than running it")
+                                 "instead of running it")
     # TODO(xion): add -r/--run flag which will be the default (but explicit)
     # counterpart to -p/--print
     gist_group.add_argument('-l', '--local', '--cached',
