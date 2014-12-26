@@ -42,9 +42,6 @@ def main(argv=sys.argv):
         _error("only POSIX operating systems are supported",
                exitcode=os.EX_UNAVAILABLE)
 
-    # TODO(xion): show warnings about executing untrusted code
-    # if APP_DIR does not exist (and then create it when user acknowledges)
-
     # treat everything after -- in the command line as arguments to be passed
     # to the gist executable itself (rather than be parsed by us)
     gist_args = []
@@ -54,6 +51,13 @@ def main(argv=sys.argv):
         argv = argv[:double_dash_pos]
 
     args = parse_argv(argv)
+
+    # during the first run, display a warning about executing untrusted code
+    if not APP_DIR.exists():
+        if not display_warning():
+            return 2
+    _ensure_path(APP_DIR)
+
     gist = args.gist
 
     # try to run the locally cached copy of the gist first
@@ -74,6 +78,26 @@ def main(argv=sys.argv):
             _error("HTTP error: %s", e, exitcode=os.EX_UNAVAILABLE)
 
     _error("gist %s not found", gist, exitcode=os.EX_DATAERR)
+
+
+def display_warning():
+    """Displays a warning about executing untrusted code
+    and ask the user to continue.
+    :return: Whether the user chose to continue
+    """
+    print(
+        "WARNING: gisht is used to download & run code from a remote source.",
+        "",
+        "Never run gists that you haven't authored, and/or do not trust.",
+        "Doing so is dangerous, and may expose your system to security risks!",
+        "",
+        "(This warning won't be shown again).",
+        "",
+        sep=os.linesep, file=sys.stderr)
+
+    print("Do you want to continue? [y/N]: ", end="", file=sys.stderr)
+    answer = raw_input()
+    return answer.lower().strip() == 'y'
 
 
 def parse_argv(argv):
@@ -110,6 +134,8 @@ def parse_argv(argv):
                             help="gist to run, specified as <owner>/<name> "
                                  "(e.g. Octocat/foo)",
                             metavar="GIST")
+    # TODO(xion) add -p/--print command that only shows the gist source
+    # without actually executing it
     gist_group.add_argument('-l', '--local', '--cached',
                             default=False, action='store_true',
                             help="only run the gist if it's available locally "
