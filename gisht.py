@@ -162,6 +162,7 @@ def create_argv_parser():
     # (removing the existing one if necessary, or doing a `git pull`)
 
     gist_action_group = gist_group.add_mutually_exclusive_group()
+    gist_action_group.set_defaults(run=True)
     gist_action_group.add_argument(
         '-r', '--run', dest='run', action='store_true',
         help="run specified gist; this is the default behavior, "
