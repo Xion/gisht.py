@@ -42,14 +42,6 @@ def main(argv=sys.argv):
         _error("only POSIX operating systems are supported",
                exitcode=os.EX_UNAVAILABLE)
 
-    # treat everything after -- in the command line as arguments to be passed
-    # to the gist executable itself (rather than be parsed by us)
-    gist_args = []
-    if '--' in argv:
-        double_dash_pos = len(argv) - 1 - argv[::-1].index('--')  # last occur.
-        gist_args = argv[double_dash_pos + 1:]
-        argv = argv[:double_dash_pos]
-
     args = parse_argv(argv)
 
     # during the first run, display a warning about executing untrusted code
@@ -59,6 +51,7 @@ def main(argv=sys.argv):
     _ensure_path(APP_DIR)
 
     gist = args.gist
+    gist_args = args.gist_args
 
     # try to run the locally cached copy of the gist first
     run_gist(gist, gist_args)
@@ -100,6 +93,8 @@ def display_warning():
     return answer.lower().strip() == 'y'
 
 
+# Command line arguments
+
 def parse_argv(argv):
     """Parse command line arguments.
 
@@ -107,6 +102,26 @@ def parse_argv(argv):
                  *including* the program name in argv[0]
 
     :return: Parse result from :func:`argparse.ArgumentParser.parse_args`
+    """
+    # treat everything after -- in the command line as arguments to be passed
+    # to the gist executable itself (rather than be parsed by us)
+    gist_args = []
+    if '--' in argv:
+        double_dash_pos = len(argv) - 1 - argv[::-1].index('--')  # last occur.
+        gist_args = argv[double_dash_pos + 1:]
+        argv = argv[:double_dash_pos]
+
+    parser = create_argv_parser()
+
+    # TODO(xion): support reading default parameter values from ~/.gishtrc
+    result = parser.parse_args(argv[1:])
+    result.gist_args = gist_args
+    return result
+
+
+def create_argv_parser():
+    """Create a :class:`argparse.ArgumentParser` object
+    for parsing command line arguments passed by the user.
     """
     parser = argparse.ArgumentParser(
         description="Download & run GitHub gists with a single command",
@@ -147,9 +162,10 @@ def parse_argv(argv):
     misc_group.add_argument('-h', '--help', action='help',
                             help="show this help message and exit")
 
-    # TODO(xion): support reading default parameter values from ~/.gishtrc
-    return parser.parse_args(argv[1:])
+    return parser
 
+
+# Gist operations
 
 def run_gist(gist, args=()):
     """Run the gist specified by owner/name string, if it exists.
