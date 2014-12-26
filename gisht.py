@@ -53,24 +53,25 @@ def main(argv=sys.argv):
     gist = args.gist
     gist_args = args.gist_args
 
-    # try to run the locally cached copy of the gist first
-    run_gist(gist, gist_args)
-    if args.local:
-        _error("gist %s is not available locally", gist,
-               exitcode=os.EX_NOINPUT)
+    # if the gist hasn't been cached locally, download it from GitHub
+    if not gist_exists(gist):
+        if args.local:
+            _error("gist %s is not available locally", gist,
+                   exitcode=os.EX_NOINPUT)
+        try:
+            if not download_gist(gist):
+                _error("gist %s not found", gist, exitcode=os.EX_DATAERR)
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 404:
+                _error("user '%s' not found", gist.split('/')[0],
+                       exitcode=os.EX_UNAVAILABLE)
+            else:
+                _error("HTTP error: %s", e, exitcode=os.EX_UNAVAILABLE)
 
-    # failing that, download the gist from GitHub
-    try:
-        if download_gist(gist):
-            run_gist(gist, gist_args)
-    except requests.exceptions.HTTPError as e:
-        if e.response.status_code == 404:
-            _error("user '%s' not found", gist.split('/')[0],
-                   exitcode=os.EX_UNAVAILABLE)
-        else:
-            _error("HTTP error: %s", e, exitcode=os.EX_UNAVAILABLE)
-
-    _error("gist %s not found", gist, exitcode=os.EX_DATAERR)
+    if args.print_:
+        print_gist(gist)
+    else:
+        run_gist(gist, gist_args)
 
 
 def display_warning():
@@ -149,8 +150,12 @@ def create_argv_parser():
                             help="gist to run, specified as <owner>/<name> "
                                  "(e.g. Octocat/foo)",
                             metavar="GIST")
-    # TODO(xion) add -p/--print command that only shows the gist source
-    # without actually executing it
+    gist_group.add_argument('-p', '--print', dest='print_',
+                            default=False, action='store_true',
+                            help="print the gist source to standard output "
+                                 "rather than running it")
+    # TODO(xion): add -r/--run flag which will be the default (but explicit)
+    # counterpart to -p/--print
     gist_group.add_argument('-l', '--local', '--cached',
                             default=False, action='store_true',
                             help="only run the gist if it's available locally "
@@ -167,21 +172,32 @@ def create_argv_parser():
 
 # Gist operations
 
-def run_gist(gist, args=()):
-    """Run the gist specified by owner/name string, if it exists.
+def gist_exists(gist):
+    """Checks if the gist specified by owner/name string exists."""
+    gist_exec_symlink = BIN_DIR / gist
+    return gist_exec_symlink.exists()  # also checks if symlink is not broken
 
-    This function does not return upon success, because the whole process
+
+def run_gist(gist, args=()):
+    """Run the gist specified by owner/name string.
+
+    This function does not return, because the whole process
     is replaced by the gist's executable.
 
     :param args: Arguments to pass to the gist
     """
-    gist_exec_symlink = BIN_DIR / gist
-    if gist_exec_symlink.exists():  # also checks if symlink is not broken
-        # TODO(xion): check for the existence of proper shebang,
-        # and if it's not there, deduce correct interpreter based on extension
-        # of the symlinks target
-        cmd = bytes(gist_exec_symlink)
-        os.execv(cmd, [cmd] + list(args))
+    # TODO(xion): check for the existence of proper shebang,
+    # and if it's not there, deduce correct interpreter based on extension
+    # of the symlinks target
+    cmd = bytes(BIN_DIR / gist)
+    os.execv(cmd, [cmd] + list(args))
+
+
+def print_gist(gist):
+    """Print the source code of the gist specified by owner/name string."""
+    gist_exec = (BIN_DIR / gist).resolve()
+    with gist_exec.open() as f:
+        sys.stdout.write(f.read())
 
 
 def download_gist(gist):
