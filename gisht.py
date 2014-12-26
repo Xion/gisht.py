@@ -62,8 +62,7 @@ def main(argv=sys.argv):
         _error("gist %s is not available locally", gist,
                exitcode=os.EX_NOINPUT)
 
-    # TODO(xion): add a command line flag to always fetch the gist
-    # (removing the existing one if necessary, or doing a `git pull`)
+    # failing that, download the gist from GitHub
     try:
         if download_gist(gist):
             run_gist(gist, gist_args)
@@ -111,9 +110,12 @@ def parse_argv(argv):
                             help="gist to run, specified as <owner>/<name> "
                                  "(e.g. Octocat/foo)",
                             metavar="GIST")
-    gist_group.add_argument('--local', default=False, action='store_true',
+    gist_group.add_argument('-l', '--local', '--cached',
+                            default=False, action='store_true',
                             help="only run the gist if it's available locally "
                                  "(do not fetch it from GitHub)")
+    # TODO(xion): add a command line flag to always fetch the gist
+    # (removing the existing one if necessary, or doing a `git pull`)
 
     misc_group.add_argument('--version', action='version', version=__version__)
     misc_group.add_argument('-h', '--help', action='help',
@@ -145,6 +147,9 @@ def download_gist(gist):
 
     :return: Whether the gist has been successfully downloaded
     """
+    # TODO(xion): make this idempotent, i.e. allowing gist to be downloaded
+    # multiple times if necessary (to perform updates)
+
     owner, gist_name = gist.split('/', 1)
     for gist_json in iter_gists(owner):
         for filename in gist_json['files'].keys():
