@@ -68,13 +68,14 @@ def main(argv=sys.argv):
             else:
                 _error("HTTP error: %s", e, exitcode=os.EX_UNAVAILABLE)
 
-    if args.print_:
+    # do with the gist what the user has requested (default: run it)
+    if args.run:
+        run_gist(gist, gist_args)
+    else:
         if gist_args:
             _error("gist arguments are not allowed when printing gist source",
                    exitcode=os.EX_USAGE)
         print_gist(gist)
-    else:
-        run_gist(gist, gist_args)
 
 
 def display_warning():
@@ -153,18 +154,21 @@ def create_argv_parser():
                             help="gist to run, specified as <owner>/<name> "
                                  "(e.g. Octocat/foo)",
                             metavar="GIST")
-    gist_group.add_argument('-p', '--print', dest='print_',
-                            default=False, action='store_true',
-                            help="print the gist source to standard output "
-                                 "instead of running it")
-    # TODO(xion): add -r/--run flag which will be the default (but explicit)
-    # counterpart to -p/--print
     gist_group.add_argument('-l', '--local', '--cached',
                             default=False, action='store_true',
                             help="only run the gist if it's available locally "
                                  "(do not fetch it from GitHub)")
     # TODO(xion): add a command line flag to always fetch the gist
     # (removing the existing one if necessary, or doing a `git pull`)
+
+    gist_action_group = gist_group.add_mutually_exclusive_group()
+    gist_action_group.add_argument(
+        '-r', '--run', dest='run', action='store_true',
+        help="run specified gist; this is the default behavior, "
+             "making specifying this flag optional")
+    gist_action_group.add_argument(
+        '-p', '--print', dest='run', action='store_false',
+        help="print gist source to standard output instead of running it")
 
     misc_group.add_argument('--version', action='version', version=__version__)
     misc_group.add_argument('-h', '--help', action='help',
