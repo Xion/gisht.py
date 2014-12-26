@@ -17,7 +17,7 @@ from hammock import Hammock
 import requests
 
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 __description__ = "Gists in the shell"
 __author__ = "Karol Kuczmarski"
 __license__ = "GPLv3"
