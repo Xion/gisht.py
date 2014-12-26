@@ -100,14 +100,14 @@ setup(
 
     platforms='posix',
     classifiers=[
-        "Development Status :: 1 - Planning",
+        "Development Status :: 2 - Pre-Alpha",
         "Environment :: Console",
         "Intended Audience :: Developers",
         "Intended Audience :: Information Technology",
         "Intended Audience :: System Administrators",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Operating System :: POSIX",
-        "Operating System :: MacOS",
+        "Operating System :: MacOS :: MacOS X",
         "Operating System :: Unix",
         "Programming Language :: Python",
         "Programming Language :: Python :: 2.7",
