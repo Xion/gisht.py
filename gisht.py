@@ -53,7 +53,6 @@ def main(argv=sys.argv):
         gist_args = argv[double_dash_pos + 1:]
         argv = argv[:double_dash_pos]
 
-    # TODO(xion): when only username is given, we should list all their gists
     args = parse_argv(argv)
     gist = args.gist
 
@@ -92,7 +91,7 @@ def parse_argv(argv):
         usage="%(prog)s [<flags>] GIST [-- GIST_ARGS]",
         add_help=False,
     )
-    gist_group = parser.add_argument_group("Gist specification")
+    gist_group = parser.add_argument_group("Gist-related")
     misc_group = parser.add_argument_group("Miscellaneous")
 
     def gist(value):
@@ -115,8 +114,6 @@ def parse_argv(argv):
     gist_group.add_argument('--local', default=False, action='store_true',
                             help="only run the gist if it's available locally "
                                  "(do not fetch it from GitHub)")
-    # TODO(xion): consider adding a short version of --local option, -l
-    # (unless we also introduce something like --list)
 
     misc_group.add_argument('--version', action='version', version=__version__)
     misc_group.add_argument('-h', '--help', action='help',
