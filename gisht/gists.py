@@ -7,7 +7,7 @@ import sys
 
 import envoy
 
-from gisht import BIN_DIR
+from gisht import BIN_DIR, GISTS_DIR
 from gisht.github import iter_gists
 from gisht.util import ensure_path
 
