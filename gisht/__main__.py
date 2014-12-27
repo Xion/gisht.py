@@ -9,7 +9,8 @@ import sys
 
 import requests
 
-from gisht import _ensure_path, APP_DIR, parse_argv
+from gisht import _ensure_path, APP_DIR
+from gisht.args import parse_argv
 from gisht.gists import download_gist, gist_exists, print_gist, run_gist
 
 
