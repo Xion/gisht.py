@@ -30,6 +30,7 @@ main() {
 
     log "INFO: Installation complete."
     log "$APP should be available under \`$APP\` command"
+    log "(If not, make sure $RUNNER_SCRIPT is in \$PATH, or create an alias)."
 }
 
 ensure_virtualenv() {
@@ -50,10 +51,12 @@ install_python_package() {
 
     # either install the package from current directory
     # or get it directly from PyPI
-    if [ -f "./$APP" ] || [ -f "./$APP/__init__.py" ]; then
+    if [ -f "./$APP/__init__.py" ]; then
         pip install -e .
     else
-        pip install --upgrade $APP
+        # perform clean install by removing any existing installations first
+        pip uninstall $APP --log-file /dev/null >/dev/null  # quiet!
+        pip install $APP
     fi
 }
 
