@@ -7,8 +7,9 @@ import sys
 
 import envoy
 
-from gisht import _ensure_path, BIN_DIR
+from gisht import BIN_DIR
 from gisht.github import iter_gists
+from gisht.util import ensure_path
 
 
 __all__ = [
@@ -63,7 +64,7 @@ def download_gist(gist):
 
             # clone the gist's repository into directory named after gist ID
             gist_dir = GISTS_DIR / str(gist_json['id'])
-            _ensure_path(gist_dir)
+            ensure_path(gist_dir)
             git_clone_run = _run(
                 'git clone %s %s' % (gist_json['git_pull_url'], gist_dir))
             if git_clone_run.status_code != 0:
@@ -76,7 +77,7 @@ def download_gist(gist):
             # create symlink from BIN_DIR/<owner>/<gist_name>
             # to the gist's executable file
             gist_owner_bin_dir = BIN_DIR / owner
-            _ensure_path(gist_owner_bin_dir)
+            ensure_path(gist_owner_bin_dir)
             gist_link = gist_owner_bin_dir / filename
             gist_link.symlink_to(_path_vector(from_=gist_link, to=gist_exec))
 
