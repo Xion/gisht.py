@@ -1,6 +1,8 @@
 """
 Module containing gist operations' code.
 """
+from __future__ import unicode_literals
+
 import os
 from pathlib import Path
 import sys
