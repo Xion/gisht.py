@@ -9,7 +9,7 @@ import sys
 
 import requests
 
-from gisht import _error, _ensure_path, APP_DIR, parse_argv
+from gisht import _ensure_path, APP_DIR, parse_argv
 from gisht.gists import download_gist, gist_exists, print_gist, run_gist
 
 
@@ -73,6 +73,18 @@ def display_warning():
     print("Do you want to continue? [y/N]: ", end="", file=sys.stderr)
     answer = raw_input()
     return answer.lower().strip() == 'y'
+
+
+# Utility functions
+
+def _error(msg, *args, **kwargs):
+    """Output an error message to stderr and end the program.
+    :param exitcode: Optional keyword argument to specify the exit code
+    """
+    msg = msg % args if args else msg
+    print("%s: error: %s" % (os.path.basename(sys.argv[0]), msg),
+          file=sys.stderr)
+    raise SystemExit(kwargs.pop('exitcode', 1))
 
 
 if __name__ == '__main__':

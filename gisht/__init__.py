@@ -7,14 +7,9 @@ gisht
 from __future__ import print_function, unicode_literals
 
 import argparse
-from collections import OrderedDict
 import os
 from pathlib import Path
 import sys
-
-import envoy
-from hammock import Hammock
-import requests
 
 
 # TODO(xion): split into more modules
@@ -119,56 +114,7 @@ def create_argv_parser():
     return parser
 
 
-# GitHub API
-
-class GitHub(Hammock):
-    """Client for GitHub REST API."""
-    API_URL = 'https://api.github.com'
-
-    #: Size of the GitHub response page in items (e.g. gists).
-    RESPONSE_PAGE_SIZE = 50
-
-    def __init__(self, *args, **kwargs):
-        super(GitHub, self).__init__(self.API_URL, *args, **kwargs)
-
-
-def iter_gists(owner):
-    """Iterate over gists owned by given user.
-
-    :param owner: GitHub user's name
-    :return: Iterable (generator) of parsed JSON objects (dictionaries)
-    :raises: :class:`requests.exception.HTTPError`
-    """
-    if type(owner).__name__ not in ('str', 'unicode'):
-        raise TypeError("expected a string")
-
-    def generator():
-        github = GitHub()
-        gists_url = str(github.users(owner).gists)
-        while gists_url:
-            gists_response = requests.get(
-                gists_url, params={'per_page': GitHub.RESPONSE_PAGE_SIZE})
-            gists_response.raise_for_status()
-
-            for gist_json in _json(gists_response):
-                yield gist_json
-
-            gists_url = gists_response.links.get('next', {}).get('url')
-
-    return generator()
-
-
 # Utility functions
-
-def _error(msg, *args, **kwargs):
-    """Output an error message to stderr and end the program.
-    :param exitcode: Optional keyword argument to specify the exit code
-    """
-    msg = msg % args if args else msg
-    print("%s: error: %s" % (os.path.basename(sys.argv[0]), msg),
-          file=sys.stderr)
-    raise SystemExit(kwargs.pop('exitcode', 1))
-
 
 def _ensure_path(path):
     """Ensures given path exists, creating all necessary directory levels.
@@ -177,52 +123,3 @@ def _ensure_path(path):
     path = Path(path)
     if not path.exists():
         path.mkdir(parents=True)
-
-
-def _run(cmd, *args, **kwargs):
-    """Wrapper around ``envoy.run`` that ensures the passed command string
-    is NOT Unicode string, but a plain buffer of bytes.
-
-    This is necessary to fix some Envoy's command parsing malfeasances.
-    """
-    return envoy.run(bytes(cmd), *args, **kwargs)
-
-
-def _join(process):
-    """Join the process, i.e. pipe its output to our own standard stream
-    and relay its exit code back to the system.
-
-    :param process: envoy's process result object
-    """
-    sys.stdout.write(process.std_out)
-    sys.stderr.write(process.std_err)
-    raise SystemExit(process.status_code)
-
-
-def _json(response):
-    """Interpret given Requests' response object as JSON."""
-    return response.json(object_pairs_hook=OrderedDict)
-
-
-def _path_vector(from_, to):
-    """Return a 'path vector' from given path to the other, i.e.
-    the argument of ``cd`` that'd take the user from the source
-    directly to target.
-    """
-    from_, to = map(Path, (from_, to))
-
-    # TODO(xion): consider using http://stackoverflow.com/a/21499676/434799
-    # instead of standard os.commonprefix (we don't run into the edge case
-    # of the latter yet)
-    common_prefix = os.path.commonprefix(list(map(str, (from_, to))))
-
-    # compute the number of '..' segments that are necessary to go
-    # from source up to the common prefix
-    prefix_wrt_source = Path(from_).relative_to(common_prefix)
-    pardir_count = len(prefix_wrt_source.parts)
-    if not from_.is_dir():
-        pardir_count -= 1
-
-    # join those '..' segments with relative path from common prefix to target
-    target_wrt_prefix = Path(to).relative_to(common_prefix)
-    return Path(*([os.path.pardir] * pardir_count)) / target_wrt_prefix
