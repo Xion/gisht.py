@@ -80,13 +80,11 @@ def read_requirements(filename='requirements.txt'):
 
 # setup() call
 
-SCRIPT = 'gisht.py'
-
 install_requires = read_requirements()
 if sys.version_info < (3, 4):
     install_requires.extend(read_requirements('py33'))
 
-tags = read_tags(SCRIPT)
+tags = read_tags(os.path.join('gisht', '__init__.py'))
 __doc__ = __doc__.format(**tags)
 
 setup(
@@ -116,9 +114,10 @@ setup(
         "Topic :: Utilities",
     ],
 
-    scripts=[SCRIPT],
+    packages=find_packages(exclude=['tests']),
+    zip_safe=False,
     entry_points={
-        'console_scripts': ['gisht=gisht:main'],
+        'console_scripts': ['gisht=gisht.__main__:main'],
     },
 
     install_requires=install_requires,
