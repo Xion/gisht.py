@@ -37,7 +37,7 @@ Installation
 Automatic
 ---------
 
-If you trust me, you can use the ``install.sh`` script to install *gisht*::
+You can use the ``install.sh`` script to install *gisht* automatically::
 
     curl -L https://github.com/Xion/gisht/raw/master/install.sh | sh
 
@@ -61,7 +61,7 @@ in its own virtualenv -- for example::
 For convenience, you can then alias it inside your ``~/.bash_aliases``, ``~/.zshrc``,
 etc.::
 
-    alias gisht='/usr/local/gisht/bin/gisht.py'
+    alias gisht='/usr/local/gisht/bin/gisht'
 
 The automatic installation script essentially does all of the above.
 
@@ -85,7 +85,7 @@ For more options, type::
 Notes
 ~~~~~
 
-Right now, this project is in very early stages. If you want to help,
+Right now, this project is in early stages. If you want to help,
 look for all the numerous ``TODO``\ s scattered about and try bringing their number down :)
 
 This should get you started on the development::
