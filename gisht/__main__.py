@@ -9,8 +9,8 @@ import sys
 
 import requests
 
-from gisht import _error, _ensure_path, \
-    APP_DIR, download_gist, gist_exists, parse_argv, print_gist, run_gist
+from gisht import _error, _ensure_path, APP_DIR, parse_argv
+from gisht.gists import download_gist, gist_exists, print_gist, run_gist
 
 
 def main(argv=sys.argv):
