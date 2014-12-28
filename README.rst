@@ -85,8 +85,11 @@ For more options, type::
 Notes
 ~~~~~
 
-Right now, this project is in early stages. If you want to help,
-look for all the numerous ``TODO``\ s scattered about and try bringing their number down :)
+Right now, this project is in early stages. `ROADMAP.rst` file contains some ideas
+on where it could be headed in the near and/or further future.
+
+If you want to help, your best bet is to look for all the numerous ``TODO``\ s
+scattered about the code case, and try to bring their number down :)
 
 This should get you started on the development::
 
