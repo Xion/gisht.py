@@ -3,12 +3,14 @@ Module implementing requests to GitHub API.
 """
 from collections import OrderedDict
 from datetime import datetime, timedelta
+from pathlib import Path
 import pickle
 
 from hammock import Hammock
 import requests
 
 from gisht import CACHE_DIR
+from gisht.util import ensure_path
 
 
 __all__ = ['get_gist_info', 'iter_gists']
@@ -55,22 +57,16 @@ def iter_gists(owner):
     return generator()
 
 
-class GitHub(Hammock):
-    """Client for GitHub REST API."""
-    API_URL = 'https://api.github.com'
+# API client
 
-    #: Size of the GitHub response page in items (e.g. gists).
-    RESPONSE_PAGE_SIZE = 50
-
-    #: Directory where the request cache is stored,
-    #: relative to application's main cache directory.
-    CACHE_DIR = CACHE_DIR / 'github'
-
-    #: Time the responses will be cached.
-    CACHE_TTL = timedelta(days=7)
-
+class CachedHammock(Hammock):
+    """Custom version of :class:`Hammock` REST client that supports
+    caching of GET requests.
+    """
     def __init__(self, *args, **kwargs):
-        super(GitHub, self).__init__(self.API_URL, *args, **kwargs)
+        self._cache_dir = kwargs.pop('cache_dir', None)
+        self._cache_ttl = kwargs.pop('cache_ttl', timedelta(days=7))
+        super(CachedHammock, self).__init__(*args, **kwargs)
 
     def _path(self):
         """Return only the path portion of the URL."""
@@ -83,35 +79,50 @@ class GitHub(Hammock):
 
     def _request(self, method, *args, **kwargs):
         """Make the HTTP request using :module:`requests` module."""
-        use_cache = kwargs.pop('cache', True)
+        use_cache = method.upper() == 'GET' and \
+                    bool(self._cache_dir) and \
+                    kwargs.pop('cache', True)
 
         # try to load the response from cache, if available
         if use_cache:
-            if not self.CACHE_DIR.exists():
-                self.CACHE_DIR.mkdir(parents=True)
-            cached_response_file = self.CACHE_DIR / self._chain(*args)._path()
-            if not self._expired(cached_response_file):
-                with cached_response_file.open('rb') as f:
+            url_path = self._chain(*args)._path()
+            cache_file = Path(self._cache_dir) / url_path
+            if not self._expired(cache_file):
+                with cache_file.open('rb') as f:
                     return pickle.load(f)
 
-        response = super(GitHub, self)._request(method, *args, **kwargs)
+        # TODO(xion): if request has failed due to transient error,
+        # return the cached response even if it's expired, and show appropriate
+        # warning on stderr that data might be stale (on -i/--info)
+        response = super(CachedHammock, self)._request(method, *args, **kwargs)
 
         # save the obtained response to cache
         if use_cache:
-            if not cached_response_file.parent.exists():
-                cached_response_file.parent.mkdir(parents=True)
-            with cached_response_file.open('wb') as f:
+            ensure_path(cache_file.parent)
+            with cache_file.open('wb') as f:
                 pickle.dump(response, f)
 
         return response
 
-    def _expired(self, cached_response_file):
+    def _expired(self, cache_file):
         """Check whether the cached response has expired."""
-        if not cached_response_file.exists():
+        if not cache_file.exists():
             return True
-        last_modify_timestamp = cached_response_file.stat().st_mtime
+        last_modify_timestamp = cache_file.stat().st_mtime
         last_modify_time = datetime.fromtimestamp(last_modify_timestamp)
-        return last_modify_time + self.CACHE_TTL <= datetime.now()
+        return last_modify_time + self._cache_ttl <= datetime.now()
+
+
+class GitHub(CachedHammock):
+    """Client for GitHub REST API."""
+    API_URL = 'https://api.github.com'
+
+    #: Size of the GitHub response page in items (e.g. gists).
+    RESPONSE_PAGE_SIZE = 50
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('cache_dir', CACHE_DIR / 'github')
+        super(GitHub, self).__init__(self.API_URL, *args, **kwargs)
 
 
 # Utility functions
