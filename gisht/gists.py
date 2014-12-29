@@ -9,7 +9,7 @@ from pathlib import Path
 import sys
 
 import envoy
-import six
+from tabulate import tabulate
 
 from gisht import BIN_DIR, GISTS_DIR
 from gisht.github import get_gist_info, iter_gists
@@ -66,7 +66,8 @@ def show_gist_info(gist):
     gist_id = gist_exec.parent.name
     gist_info = get_gist_info(gist_id)
 
-    # print the gist information, formatting it appropriately
+    # prepare the gist information for display
+    info = []
     for label, field in GIST_INFO_FIELDS.items():
         if not isinstance(field, tuple):
             field = (field,)
@@ -75,8 +76,12 @@ def show_gist_info(gist):
             data = step(data) if callable(step) else data[step]
         if isinstance(data, list):
             data = ", ".join(data)
-        # TODO(xion): align the colons in single column
-        print("%s: %s" % (label, data))
+        info.append((label, data))
+
+    # print it all as a table
+    table = tabulate(((label, ": " + str(value)) for label, value in info),
+                     tablefmt='plain')
+    print(table)
 
 
 # Downloading & caching
