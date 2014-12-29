@@ -10,12 +10,12 @@ import sys
 import envoy
 
 from gisht import BIN_DIR, GISTS_DIR
-from gisht.github import iter_gists
+from gisht.github import get_gist_info, iter_gists
 from gisht.util import ensure_path
 
 
 __all__ = [
-    'run_gist', 'print_gist',
+    'run_gist', 'print_gist', 'show_gist_info',
     'gist_exists', 'download_gist',
 ]
 
@@ -40,6 +40,13 @@ def print_gist(gist):
     gist_exec = (BIN_DIR / gist).resolve()
     with gist_exec.open() as f:
         sys.stdout.write(f.read())
+
+
+def show_gist_info(gist):
+    """Shows information about the gist specified by owner/name string."""
+    gist_exec = (BIN_DIR / gist).resolve()
+    gist_id = gist_exec.parent.name
+    print get_gist_info(gist_id)
 
 
 # Downloading & caching

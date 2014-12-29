@@ -11,7 +11,8 @@ import requests
 
 from gisht import APP_DIR
 from gisht.args import GistAction, parse_argv
-from gisht.gists import download_gist, gist_exists, print_gist, run_gist
+from gisht.gists import (download_gist, gist_exists,
+                         print_gist, run_gist, show_gist_info)
 from gisht.util import ensure_path
 
 
@@ -56,11 +57,12 @@ def main(argv=sys.argv):
                    exitcode=os.EX_USAGE)
         print_gist(gist)
     elif args.action == GistAction.INFO:
-        # TODO(xion): implement
-        raise NotImplementedError("-i/--info is not yet implemented")
+        if gist_args:
+            _error("gist arguments are not allowed when printing gist info",
+                   exitcode=os.EX_USAGE)
+        show_gist_info(gist)
     else:
-        _error("unknown gist action %r" % (args.action,),
-               exitcode=ox.EX_DATAERR)
+        _error("unknown gist action %r" % (args.action,), exitcode=ox.EX_USAGE)
 
 
 def display_warning():

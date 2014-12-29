@@ -7,7 +7,22 @@ from hammock import Hammock
 import requests
 
 
-__all__ = ['iter_gists']
+__all__ = ['get_gist_info', 'iter_gists']
+
+
+def get_gist_info(gist_id):
+    """Retrieve information about gist of given ID.
+
+    :param gist_id: Numerical ID of a GitHub gist
+                    (NOT the user-visible <owner>/<name> string!)
+
+    :return: Dictionary with gist information
+    :raises: :class:`requests.exception.HTTPError`
+    """
+    github = GitHub()
+    response = requests.get(str(github.gists(gist_id)))
+    response.raise_for_status()
+    return response.json()
 
 
 def iter_gists(owner):
