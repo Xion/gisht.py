@@ -40,7 +40,7 @@ Crazy things
 Other gist actions
 ~~~~~~~~~~~~~~~~~~
 
-* -i/--info for listing gist information from GitHub API
+* Caching of GitHub API requests that are issued when -i/--info is used
 * -s/--star for starring gists (requires acting as user, see Private gists)
 * -c/--comment for leaving comments (as above)
 
