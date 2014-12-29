@@ -25,3 +25,8 @@ GISTS_DIR = APP_DIR / 'gists'
 #: Subdirectories have names corresponding to GitHub user handles
 #: and contain symbolic links to executable files inside gist repos.
 BIN_DIR = APP_DIR / 'bin'
+
+#: Directory where the request cache resides.
+#: Subdirectories contiain pickled :class:`Response` objects
+#: (from :module:`requests`) inside directory paths corresponding to URL paths.
+CACHE_DIR = APP_DIR / 'cache'
