@@ -1,13 +1,15 @@
 """
 Module containing gist operations' code.
 """
-from __future__ import unicode_literals
+from __future__ import print_function, unicode_literals
 
+from collections import OrderedDict
 import os
 from pathlib import Path
 import sys
 
 import envoy
+import six
 
 from gisht import BIN_DIR, GISTS_DIR
 from gisht.github import get_gist_info, iter_gists
@@ -42,11 +44,39 @@ def print_gist(gist):
         sys.stdout.write(f.read())
 
 
+#: Mapping of gist --info labels to keys in the GitHub API response
+#: that describes a gist. Used when displaying information abou a gist.
+GIST_INFO_FIELDS = OrderedDict([
+    ("ID", 'id'),
+    ("Owner", ('owner', 'login')),
+    ("URL", 'html_url'),  # URL to gist's user-facing page
+    ("Description", 'description'),
+    ("Files", ('files', list)),
+    ("Created at", 'created_at'),
+    ("Comments #", 'comments'),
+    ("Forks #", ('forks', len)),
+    ("Revisions #", ('history', len)),
+    ("Last update", 'updated_at'),
+])
+
+
 def show_gist_info(gist):
     """Shows information about the gist specified by owner/name string."""
     gist_exec = (BIN_DIR / gist).resolve()
     gist_id = gist_exec.parent.name
-    print get_gist_info(gist_id)
+    gist_info = get_gist_info(gist_id)
+
+    # print the gist information, formatting it appropriately
+    for label, field in GIST_INFO_FIELDS.items():
+        if not isinstance(field, tuple):
+            field = (field,)
+        data = gist_info
+        for step in field:
+            data = step(data) if callable(step) else data[step]
+        if isinstance(data, list):
+            data = ", ".join(data)
+        # TODO(xion): align the colons in single column
+        print("%s: %s" % (label, data))
 
 
 # Downloading & caching
