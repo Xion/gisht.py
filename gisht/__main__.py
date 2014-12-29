@@ -10,7 +10,7 @@ import sys
 import requests
 
 from gisht import APP_DIR
-from gisht.args import parse_argv
+from gisht.args import GistAction, parse_argv
 from gisht.gists import download_gist, gist_exists, print_gist, run_gist
 from gisht.util import ensure_path
 
@@ -48,13 +48,19 @@ def main(argv=sys.argv):
                 _error("HTTP error: %s", e, exitcode=os.EX_UNAVAILABLE)
 
     # do with the gist what the user has requested (default: run it)
-    if args.run:
+    if args.action == GistAction.RUN:
         run_gist(gist, gist_args)
-    else:
+    elif args.action == GistAction.PRINT:
         if gist_args:
             _error("gist arguments are not allowed when printing gist source",
                    exitcode=os.EX_USAGE)
         print_gist(gist)
+    elif args.action == GistAction.INFO:
+        # TODO(xion): implement
+        raise NotImplementedError("-i/--info is not yet implemented")
+    else:
+        _error("unknown gist action %r" % (args.action,),
+               exitcode=ox.EX_DATAERR)
 
 
 def display_warning():

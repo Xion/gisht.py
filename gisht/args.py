@@ -2,11 +2,12 @@
 Module for parsing command line arguments.
 """
 import argparse
+from enum import Enum
 
 from gisht import __version__
 
 
-__all__ = ['parse_argv']
+__all__ = ['parse_argv', 'GistAction']
 
 
 def parse_argv(argv):
@@ -31,6 +32,13 @@ def parse_argv(argv):
     result = parser.parse_args(argv[1:])
     result.gist_args = gist_args
     return result
+
+
+class GistAction(Enum):
+    """Action to undertake towards the gist."""
+    RUN = 'run'
+    PRINT = 'print'
+    INFO = 'info'
 
 
 # Argument parser creation
@@ -73,14 +81,20 @@ def create_argv_parser():
     # (removing the existing one if necessary, or doing a `git pull`)
 
     gist_action_group = gist_group.add_mutually_exclusive_group()
-    gist_action_group.set_defaults(run=True)
+    gist_action_group.set_defaults(action=GistAction.RUN)
     gist_action_group.add_argument(
-        '-r', '--run', dest='run', action='store_true',
+        '-r', '--run', dest='action',
+        action='store_const', const=GistAction.RUN,
         help="run specified gist; this is the default behavior, "
              "making specifying this flag optional")
     gist_action_group.add_argument(
-        '-p', '--print', dest='run', action='store_false',
+        '-p', '--print', dest='action',
+        action='store_const', const=GistAction.PRINT,
         help="print gist source to standard output instead of running it")
+    gist_action_group.add_argument(
+        '-i', '--info', dest='action',
+        action='store_const', const=GistAction.INFO,
+        help="show summary information about the specified gist")
 
     misc_group.add_argument('--version', action='version', version=__version__)
     misc_group.add_argument('-h', '--help', action='help',
