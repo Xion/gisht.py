@@ -49,13 +49,14 @@ def create_argv_parser():
     for parsing command line arguments passed by the user.
     """
     parser = argparse.ArgumentParser(
-        description="Download & run GitHub gists with a single command",
+        description="Download & run GitHub gists straight from the terminal",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        usage="%(prog)s [<flags>] GIST [-- GIST_ARGS]",
+        usage="%(prog)s [action] GIST [flags] [-- GIST_ARGS]",
         add_help=False,
     )
-    gist_group = parser.add_argument_group("Gist-related")
-    misc_group = parser.add_argument_group("Miscellaneous")
+
+    gist_group = parser.add_argument_group(
+        "Gist", "Specifies the gist, optionally with flags")
 
     def gist(value):
         """Converter/validator for the GIST command line argument."""
@@ -71,7 +72,7 @@ def create_argv_parser():
             raise argparse.ArgumentTypeError(
                 "neither gist owner or name can be empty (got %r)" % (value,))
     gist_group.add_argument('gist', type=gist,
-                            help="gist to run, specified as <owner>/<name> "
+                            help="GitHub gist, specified as <owner>/<name> "
                                  "(e.g. Octocat/foo)",
                             metavar="GIST")
     gist_group.add_argument('-l', '--local', '--cached',
@@ -81,27 +82,30 @@ def create_argv_parser():
     # TODO(xion): add a command line flag to always fetch the gist
     # (removing the existing one if necessary, or doing a `git pull`)
 
-    gist_action_group = gist_group.add_mutually_exclusive_group()
+    gist_action_group = parser.add_argument_group(
+        "Actions", "Possible actions to perform on gist") \
+        .add_mutually_exclusive_group()
     gist_action_group.set_defaults(action=GistAction.RUN)
     gist_action_group.add_argument(
         '-r', '--run', dest='action',
         action='store_const', const=GistAction.RUN,
-        help="run specified gist; this is the default behavior, "
-             "making specifying this flag optional")
+        help="run specified gist; this is the default behavior "
+             "if no action was specified explicitly")
     gist_action_group.add_argument(
         '-w', '--which', dest='action',
         action='store_const', const=GistAction.WHICH,
         help="output the path to binary which would be ran for given gist; "
-             "useful for passing it to other commands")
+             "useful for passing it to other commands via $( )")
     gist_action_group.add_argument(
         '-p', '--print', dest='action',
         action='store_const', const=GistAction.PRINT,
-        help="print gist source to standard output instead of running it")
+        help="print gist source on the standard output")
     gist_action_group.add_argument(
         '-i', '--info', dest='action',
         action='store_const', const=GistAction.INFO,
         help="show summary information about the specified gist")
 
+    misc_group = parser.add_argument_group("Miscellaneous", "Other options")
     misc_group.add_argument('--version', action='version', version=__version__)
     misc_group.add_argument('-h', '--help', action='help',
                             help="show this help message and exit")
