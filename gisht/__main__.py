@@ -14,7 +14,6 @@ from gisht.args import GistAction, parse_argv
 from gisht.gists import (
     download_gist, gist_exists,
     output_gist_binary_path, print_gist, run_gist, show_gist_info)
-from gisht.util import ensure_path
 
 
 def main(argv=sys.argv):
@@ -29,13 +28,13 @@ def main(argv=sys.argv):
     if not APP_DIR.exists():
         if not display_warning():
             return 2
-    ensure_path(APP_DIR)
+        APP_DIR.mkdir(parents=True)
 
     gist = args.gist
     gist_args = args.gist_args
 
     # if the gist hasn't been cached locally, download it from GitHub
-    if not gist_exists(gist):
+    if args.action != GistAction.INFO and not gist_exists(gist):
         if args.local:
             _error("gist %s is not available locally", gist,
                    exitcode=os.EX_NOINPUT)
@@ -52,24 +51,18 @@ def main(argv=sys.argv):
     # do with the gist what the user has requested (default: run it)
     if args.action == GistAction.RUN:
         run_gist(gist, gist_args)
-    elif args.action == GistAction.WHICH:
-        if gist_args:
-            _error(
-                "gist arguments are not allowed when getting gist binary path",
-                exitcode=os.EX_USAGE)
-        output_gist_binary_path(gist)
-    elif args.action == GistAction.PRINT:
-        if gist_args:
-            _error("gist arguments are not allowed when printing gist source",
-                   exitcode=os.EX_USAGE)
-        print_gist(gist)
-    elif args.action == GistAction.INFO:
-        if gist_args:
-            _error("gist arguments are not allowed when printing gist info",
-                   exitcode=os.EX_USAGE)
-        show_gist_info(gist)
-    else:
+    elif args.action not in GistAction:
         _error("unknown gist action %r" % (args.action,), exitcode=ox.EX_USAGE)
+    else:
+        if gist_args:
+            _error("gist arguments are only allowed when running the gist",
+                   exitcode=os.EX_USAGE)
+        if args.action == GistAction.WHICH:
+            output_gist_binary_path(gist)
+        elif args.action == GistAction.PRINT:
+            print_gist(gist)
+        elif args.action == GistAction.INFO:
+            show_gist_info(gist)
 
 
 def display_warning():
