@@ -95,6 +95,7 @@ class CachedHammock(Hammock):
         # return the cached response even if it's expired, and show appropriate
         # warning on stderr that data might be stale (on -i/--info)
         response = super(CachedHammock, self)._request(method, *args, **kwargs)
+        # TODO(xion): the above logic should be also influenced by -/--local
 
         # save the obtained response to cache
         if use_cache:

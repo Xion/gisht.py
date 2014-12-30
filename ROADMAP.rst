@@ -5,6 +5,7 @@ Interface improvements
 ~~~~~~~~~~~~~~~~~~~~~~
 
 * ~/.gishtrc support
+* Logging & -v/--verbose + -q/--quiet modes
 * Correcting misspelt gist names
 * Autocompletion of gists (from local cache)
 * Autocompletion of gist names after `user/` is typed
