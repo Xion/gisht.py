@@ -52,7 +52,7 @@ def main(argv=sys.argv):
     if args.action == GistAction.RUN:
         run_gist(gist, gist_args)
     elif args.action not in GistAction:
-        _error("unknown gist action %r" % (args.action,), exitcode=ox.EX_USAGE)
+        _error("unknown gist action %r" % (args.action,), exitcode=os.EX_USAGE)
     else:
         if gist_args:
             _error("gist arguments are only allowed when running the gist",

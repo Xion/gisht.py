@@ -79,9 +79,9 @@ class CachedHammock(Hammock):
 
     def _request(self, method, *args, **kwargs):
         """Make the HTTP request using :module:`requests` module."""
-        use_cache = method.upper() == 'GET' and \
-                    bool(self._cache_dir) and \
-                    kwargs.pop('cache', True)
+        use_cache = (method.upper() == 'GET' and
+                     bool(self._cache_dir) and
+                     kwargs.pop('cache', True))
 
         # try to load the response from cache, if available
         if use_cache:
