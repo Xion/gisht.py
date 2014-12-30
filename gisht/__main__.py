@@ -11,8 +11,9 @@ import requests
 
 from gisht import APP_DIR
 from gisht.args import GistAction, parse_argv
-from gisht.gists import (download_gist, gist_exists,
-                         print_gist, run_gist, show_gist_info)
+from gisht.gists import (
+    download_gist, gist_exists,
+    output_gist_binary_path, print_gist, run_gist, show_gist_info)
 from gisht.util import ensure_path
 
 
@@ -51,6 +52,12 @@ def main(argv=sys.argv):
     # do with the gist what the user has requested (default: run it)
     if args.action == GistAction.RUN:
         run_gist(gist, gist_args)
+    elif args.action == GistAction.WHICH:
+        if gist_args:
+            _error(
+                "gist arguments are not allowed when getting gist binary path",
+                exitcode=os.EX_USAGE)
+        output_gist_binary_path(gist)
     elif args.action == GistAction.PRINT:
         if gist_args:
             _error("gist arguments are not allowed when printing gist source",

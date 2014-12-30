@@ -37,6 +37,7 @@ def parse_argv(argv):
 class GistAction(Enum):
     """Action to undertake towards the gist."""
     RUN = 'run'
+    WHICH = 'which'
     PRINT = 'print'
     INFO = 'info'
 
@@ -87,6 +88,11 @@ def create_argv_parser():
         action='store_const', const=GistAction.RUN,
         help="run specified gist; this is the default behavior, "
              "making specifying this flag optional")
+    gist_action_group.add_argument(
+        '-w', '--which', dest='action',
+        action='store_const', const=GistAction.WHICH,
+        help="output the path to binary which would be ran for given gist; "
+             "useful for passing it to other commands")
     gist_action_group.add_argument(
         '-p', '--print', dest='action',
         action='store_const', const=GistAction.PRINT,

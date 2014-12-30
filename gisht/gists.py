@@ -17,7 +17,7 @@ from gisht.util import ensure_path
 
 
 __all__ = [
-    'run_gist', 'print_gist', 'show_gist_info',
+    'run_gist', 'output_gist_binary_path', 'print_gist', 'show_gist_info',
     'gist_exists', 'download_gist',
 ]
 
@@ -35,6 +35,11 @@ def run_gist(gist, args=()):
     # of the symlinks target
     cmd = bytes(BIN_DIR / gist)
     os.execv(cmd, [cmd] + list(args))
+
+
+def output_gist_binary_path(gist):
+    """Print the bath to gist binary."""
+    print(BIN_DIR / gist)
 
 
 def print_gist(gist):
