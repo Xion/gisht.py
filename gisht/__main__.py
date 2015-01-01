@@ -41,10 +41,8 @@ def main(argv=sys.argv):
             error("gist %s is not available locally", gist,
                   exitcode=os.EX_NOINPUT)
         try:
-            logger.debug("downloading gist %s...", gist)
             if not download_gist(gist):
                 error("gist %s not found", gist, exitcode=os.EX_DATAERR)
-            logger.info("gist %s downloaded sucessfully", gist)
         except requests.exceptions.HTTPError as e:
             if e.response.status_code == 404:
                 error("user '%s' not found", gist.split('/')[0],

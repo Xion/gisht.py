@@ -11,7 +11,7 @@ import sys
 import envoy
 from tabulate import tabulate
 
-from gisht import BIN_DIR, GISTS_DIR
+from gisht import BIN_DIR, GISTS_DIR, logger
 from gisht.github import get_gist_info, iter_gists
 from gisht.util import ensure_path
 
@@ -44,7 +44,18 @@ def output_gist_binary_path(gist):
 
 def print_gist(gist):
     """Print the source code of the gist specified by owner/name string."""
+    logger.debug("showing source code for gist %s", gist)
+
+    # resolve the gist exec symlink to find the source file
+    # TODO(xion): what about other possible files?
     gist_exec = (BIN_DIR / gist).resolve()
+    if gist_exec.exists():
+        logger.debug("executable for gist %s found at %s", gist, gist_exec)
+    else:
+        # TODO(xion): inconsistent state; we should detect those and clean up
+        logger.fatal("executable for gist %s missing!", gist)
+        raise SystemExit(os.EX_SOFTWARE)
+
     with gist_exec.open() as f:
         sys.stdout.write(f.read())
 
@@ -67,9 +78,14 @@ GIST_INFO_FIELDS = OrderedDict([
 
 def show_gist_info(gist):
     """Shows information about the gist specified by owner/name string."""
+    logger.debug("fetching information about gist %s ...", gist)
+
     gist_exec = (BIN_DIR / gist).resolve()
     gist_id = gist_exec.parent.name
+    logger.debug("gist %s found to have ID=%s", gist, gist_id)
+
     gist_info = get_gist_info(gist_id)
+    logger.info('information about gist %s retrieved successfully', gist)
 
     # prepare the gist information for display
     info = []
@@ -105,6 +121,8 @@ def download_gist(gist):
     # TODO(xion): make this idempotent, i.e. allowing gist to be downloaded
     # multiple times if necessary (to perform updates)
 
+    logger.debug("downloading gist %s ...", gist)
+
     owner, gist_name = gist.split('/', 1)
     for gist_json in iter_gists(owner):
         for filename in gist_json['files'].keys():
@@ -112,16 +130,22 @@ def download_gist(gist):
                 continue
 
             # clone the gist's repository into directory named after gist ID
+            logger.debug("gist %s found, cloning its repository...", gist)
             gist_dir = GISTS_DIR / str(gist_json['id'])
             ensure_path(gist_dir)
             git_clone_run = run('git clone %s %s' % (
                 gist_json['git_pull_url'], gist_dir))
             if git_clone_run.status_code != 0:
+                logger.warning(
+                    "cloning repository for gist %s failed (exitcode %s)",
+                    gist, git_clone_run.status_code)
                 join(git_clone_run)
+            logger.debug("gist %s successfully cloned", gist)
 
             # make sure the gist executable is, in fact, executable
             gist_exec = gist_dir / filename
             gist_exec.chmod(int('755', 8))
+            logger.debug("gist file %s made executable", gist_exec)
 
             # create symlink from BIN_DIR/<owner>/<gist_name>
             # to the gist's executable file
@@ -129,7 +153,10 @@ def download_gist(gist):
             ensure_path(gist_owner_bin_dir)
             gist_link = gist_owner_bin_dir / filename
             gist_link.symlink_to(path_vector(from_=gist_link, to=gist_exec))
+            logger.debug("symlinked gist 'binary' %s to executable %s",
+                         gist_link, gist_exec)
 
+            logger.info("gist %s downloaded sucessfully", gist)
             return True
 
     return False
