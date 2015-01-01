@@ -4,12 +4,13 @@ Executable script.
 """
 from __future__ import print_function
 
+import logging
 import os
 import sys
 
 import requests
 
-from gisht import APP_DIR
+from gisht import APP_DIR, logger
 from gisht.args import GistAction, parse_argv
 from gisht.gists import (
     download_gist, gist_exists,
@@ -23,6 +24,7 @@ def main(argv=sys.argv):
               exitcode=os.EX_UNAVAILABLE)
 
     args = parse_argv(argv)
+    setup_logging(args.log_level)
 
     # during the first run, display a warning about executing untrusted code
     if not APP_DIR.exists():
@@ -65,6 +67,22 @@ def main(argv=sys.argv):
             show_gist_info(gist)
 
 
+def setup_logging(level):
+    """Sets up the application-wide logging system to output everything to
+    standard output, and filter our own messages according to given
+    minimum level.
+    """
+    logger.setLevel(level)
+
+    # propagate log messages from our application-specific logger
+    # to the root logger, to be dumped to stderr alongside any possible output
+    # from other loggers (like those from third party libraries)
+    logger.propagate = True
+    handler = logging.StreamHandler(sys.stderr)
+    logging.getLogger().addHandler(handler)
+
+
+
 def display_warning():
     """Displays a warning about executing untrusted code
     and ask the user to continue.
@@ -92,8 +110,7 @@ def error(msg, *args, **kwargs):
     :param exitcode: Optional keyword argument to specify the exit code
     """
     msg = msg % args if args else msg
-    print("%s: error: %s" % (os.path.basename(sys.argv[0]), msg),
-          file=sys.stderr)
+    logger.error("%s: error: %s", os.path.basename(sys.argv[0]), msg)
     raise SystemExit(kwargs.pop('exitcode', 1))
 
 

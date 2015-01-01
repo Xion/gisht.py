@@ -10,6 +10,7 @@ __author__ = "Karol Kuczmarski"
 __license__ = "GPLv3"
 
 
+import logging
 import os
 from pathlib import Path
 
@@ -30,3 +31,7 @@ BIN_DIR = APP_DIR / 'bin'
 #: Subdirectories contiain pickled :class:`Response` objects
 #: (from :module:`requests`) inside directory paths corresponding to URL paths.
 CACHE_DIR = APP_DIR / 'cache'
+
+
+#: Logger object used by the application.
+logger = logging.getLogger(__name__)
