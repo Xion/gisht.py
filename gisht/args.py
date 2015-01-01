@@ -4,6 +4,7 @@ Module for parsing command line arguments.
 import argparse
 from enum import Enum
 from itertools import chain
+import logging
 
 from gisht import __version__
 
@@ -104,6 +105,18 @@ def create_argv_parser():
         action='store_const', const=GistAction.INFO,
         help="show summary information about the specified gist")
 
+    log_group = parser.add_argument_group(
+        "Verbosity", "Only errors are printed by default") \
+        .add_mutually_exclusive_group()
+    log_group.set_defaults(log_level=logging.ERROR)
+    log_group.add_argument('-v', '--verbose', dest='log_level',
+                           action=LogLevelAction,
+                           help="include finer grained details in the output; "
+                                "this option can be specified multiple times")
+    log_group.add_argument('-q', '--quiet', dest='log_level',
+                           action=LogLevelAction,
+                           help="decrease the verbosity level")
+
     misc_group = parser.add_argument_group("Miscellaneous", "Other options")
     misc_group.add_argument('--version', action='version', version=__version__)
     misc_group.add_argument('-h', '--help', action='help',
@@ -119,3 +132,25 @@ def create_argv_parser():
         usage = usage.replace(" [%s]" % misc_flag, "")
     parser.usage = usage + " [-- GIST_ARGS]"
     return parser
+
+
+class LogLevelAction(argparse.Action):
+    """Custom argument parser's :class:`Action` for handling
+    log level / verbosity flags.
+    """
+    DEFAULT_LEVEL = logging.INFO
+    DEFAULT_INCREMENT = 10
+    DEFAULT_MINIMUM = logging.NOTSET
+    DEFAULT_MAXIMUM = logging.CRITICAL
+
+    def __init__(self, *args, **kwargs):
+        self.min = kwargs.pop('min', self.DEFAULT_MINIMUM)
+        self.max = kwargs.pop('max', self.DEFAULT_MAXIMUM)
+        kwargs.setdefault('const', self.DEFAULT_INCREMENT)
+        super(LogLevelAction, self).__init__(*args, nargs=0, **kwargs)
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        current = getattr(namespace, self.dest, self.DEFAULT_LEVEL)
+        # TODO(xion): error-out if the limits are exceeded
+        new = max(self.min, min(self.max, current + self.const))
+        setattr(namespace, self.dest, new)
