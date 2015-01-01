@@ -12,5 +12,5 @@ class PathVector(TestCase):
     PATH = '/foo/bar'
 
     def test_noop(self):
-        result = __unit__._path_vector(self.PATH, self.PATH)
+        result = __unit__.path_vector(self.PATH, self.PATH)
         self.assertEquals('.', str(result))

@@ -19,8 +19,8 @@ from gisht.gists import (
 def main(argv=sys.argv):
     """Entry point."""
     if os.name != 'posix':
-        _error("only POSIX operating systems are supported",
-               exitcode=os.EX_UNAVAILABLE)
+        error("only POSIX operating systems are supported",
+              exitcode=os.EX_UNAVAILABLE)
 
     args = parse_argv(argv)
 
@@ -36,27 +36,27 @@ def main(argv=sys.argv):
     # if the gist hasn't been cached locally, download it from GitHub
     if args.action != GistAction.INFO and not gist_exists(gist):
         if args.local:
-            _error("gist %s is not available locally", gist,
-                   exitcode=os.EX_NOINPUT)
+            error("gist %s is not available locally", gist,
+                  exitcode=os.EX_NOINPUT)
         try:
             if not download_gist(gist):
-                _error("gist %s not found", gist, exitcode=os.EX_DATAERR)
+                error("gist %s not found", gist, exitcode=os.EX_DATAERR)
         except requests.exceptions.HTTPError as e:
             if e.response.status_code == 404:
-                _error("user '%s' not found", gist.split('/')[0],
-                       exitcode=os.EX_UNAVAILABLE)
+                error("user '%s' not found", gist.split('/')[0],
+                      exitcode=os.EX_UNAVAILABLE)
             else:
-                _error("HTTP error: %s", e, exitcode=os.EX_UNAVAILABLE)
+                error("HTTP error: %s", e, exitcode=os.EX_UNAVAILABLE)
 
     # do with the gist what the user has requested (default: run it)
     if args.action == GistAction.RUN:
         run_gist(gist, gist_args)
     elif args.action not in GistAction:
-        _error("unknown gist action %r" % (args.action,), exitcode=os.EX_USAGE)
+        error("unknown gist action %r" % (args.action,), exitcode=os.EX_USAGE)
     else:
         if gist_args:
-            _error("gist arguments are only allowed when running the gist",
-                   exitcode=os.EX_USAGE)
+            error("gist arguments are only allowed when running the gist",
+                  exitcode=os.EX_USAGE)
         if args.action == GistAction.WHICH:
             output_gist_binary_path(gist)
         elif args.action == GistAction.PRINT:
@@ -87,7 +87,7 @@ def display_warning():
 
 # Utility functions
 
-def _error(msg, *args, **kwargs):
+def error(msg, *args, **kwargs):
     """Output an error message to stderr and end the program.
     :param exitcode: Optional keyword argument to specify the exit code
     """

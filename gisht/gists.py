@@ -114,10 +114,10 @@ def download_gist(gist):
             # clone the gist's repository into directory named after gist ID
             gist_dir = GISTS_DIR / str(gist_json['id'])
             ensure_path(gist_dir)
-            git_clone_run = _run(
-                'git clone %s %s' % (gist_json['git_pull_url'], gist_dir))
+            git_clone_run = run('git clone %s %s' % (
+                gist_json['git_pull_url'], gist_dir))
             if git_clone_run.status_code != 0:
-                _join(git_clone_run)
+                join(git_clone_run)
 
             # make sure the gist executable is, in fact, executable
             gist_exec = gist_dir / filename
@@ -128,7 +128,7 @@ def download_gist(gist):
             gist_owner_bin_dir = BIN_DIR / owner
             ensure_path(gist_owner_bin_dir)
             gist_link = gist_owner_bin_dir / filename
-            gist_link.symlink_to(_path_vector(from_=gist_link, to=gist_exec))
+            gist_link.symlink_to(path_vector(from_=gist_link, to=gist_exec))
 
             return True
 
@@ -137,7 +137,7 @@ def download_gist(gist):
 
 # Utility functions
 
-def _run(cmd, *args, **kwargs):
+def run(cmd, *args, **kwargs):
     """Wrapper around ``envoy.run`` that ensures the passed command string
     is NOT Unicode string, but a plain buffer of bytes.
 
@@ -146,7 +146,7 @@ def _run(cmd, *args, **kwargs):
     return envoy.run(bytes(cmd), *args, **kwargs)
 
 
-def _join(process):
+def join(process):
     """Join the process, i.e. pipe its output to our own standard stream
     and relay its exit code back to the system.
 
@@ -157,7 +157,7 @@ def _join(process):
     raise SystemExit(process.status_code)
 
 
-def _path_vector(from_, to):
+def path_vector(from_, to):
     """Return a 'path vector' from given path to the other, i.e.
     the argument of ``cd`` that'd take the user from the source
     directly to target.

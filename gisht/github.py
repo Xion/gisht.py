@@ -49,7 +49,7 @@ def iter_gists(owner):
                 gists_url, params={'per_page': GitHub.RESPONSE_PAGE_SIZE})
             gists_response.raise_for_status()
 
-            for gist_json in _json(gists_response):
+            for gist_json in to_json(gists_response):
                 yield gist_json
 
             gists_url = gists_response.links.get('next', {}).get('url')
@@ -128,6 +128,6 @@ class GitHub(CachedHammock):
 
 # Utility functions
 
-def _json(response):
+def to_json(response):
     """Interpret given Requests' response object as JSON."""
     return response.json(object_pairs_hook=OrderedDict)
