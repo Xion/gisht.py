@@ -111,10 +111,12 @@ def create_argv_parser():
     log_group.set_defaults(log_level=logging.ERROR)
     log_group.add_argument('-v', '--verbose', dest='log_level',
                            action=LogLevelAction,
+                           const=-LogLevelAction.DEFAULT_INCREMENT,
                            help="include finer grained details in the output; "
                                 "this option can be specified multiple times")
     log_group.add_argument('-q', '--quiet', dest='log_level',
                            action=LogLevelAction,
+                           const=LogLevelAction.DEFAULT_INCREMENT,
                            help="decrease the verbosity level")
 
     misc_group = parser.add_argument_group("Miscellaneous", "Other options")

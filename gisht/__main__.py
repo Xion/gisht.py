@@ -20,8 +20,8 @@ from gisht.gists import (
 def main(argv=sys.argv):
     """Entry point."""
     if os.name != 'posix':
-        error("only POSIX operating systems are supported",
-              exitcode=os.EX_UNAVAILABLE)
+        print("only POSIX operating systems are supported", file=sys.stderr)
+        return os.EX_UNAVAILABLE
 
     args = parse_argv(argv)
     setup_logging(args.log_level)
@@ -41,8 +41,10 @@ def main(argv=sys.argv):
             error("gist %s is not available locally", gist,
                   exitcode=os.EX_NOINPUT)
         try:
+            logger.debug("downloading gist %s...", gist)
             if not download_gist(gist):
                 error("gist %s not found", gist, exitcode=os.EX_DATAERR)
+            logger.info("gist %s downloaded sucessfully", gist)
         except requests.exceptions.HTTPError as e:
             if e.response.status_code == 404:
                 error("user '%s' not found", gist.split('/')[0],
@@ -54,7 +56,7 @@ def main(argv=sys.argv):
     if args.action == GistAction.RUN:
         run_gist(gist, gist_args)
     elif args.action not in GistAction:
-        error("unknown gist action %r" % (args.action,), exitcode=os.EX_USAGE)
+        error("unknown gist action %r", args.action, exitcode=os.EX_USAGE)
     else:
         if gist_args:
             error("gist arguments are only allowed when running the gist",
