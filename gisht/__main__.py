@@ -36,19 +36,22 @@ def main(argv=sys.argv):
     gist_args = args.gist_args
 
     # if the gist hasn't been cached locally, download it from GitHub
-    if args.action != GistAction.INFO and not gist_exists(gist):
-        if args.local:
-            error("gist %s is not available locally", gist,
-                  exitcode=os.EX_NOINPUT)
-        try:
-            if not download_gist(gist):
-                error("gist %s not found", gist, exitcode=os.EX_DATAERR)
-        except requests.exceptions.HTTPError as e:
-            if e.response.status_code == 404:
-                error("user '%s' not found", gist.split('/')[0],
-                      exitcode=os.EX_UNAVAILABLE)
-            else:
-                error("HTTP error: %s", e, exitcode=os.EX_UNAVAILABLE)
+    if args.action != GistAction.INFO:
+        if gist_exists(gist):
+            logger.debug("gist %s found among already downloaded gists", gist)
+        else:
+            if args.local:
+                error("gist %s is not available locally", gist,
+                      exitcode=os.EX_NOINPUT)
+            try:
+                if not download_gist(gist):
+                    error("gist %s not found", gist, exitcode=os.EX_DATAERR)
+            except requests.exceptions.HTTPError as e:
+                if e.response.status_code == 404:
+                    error("user '%s' not found", gist.split('/')[0],
+                          exitcode=os.EX_UNAVAILABLE)
+                else:
+                    error("HTTP error: %s", e, exitcode=os.EX_UNAVAILABLE)
 
     # do with the gist what the user has requested (default: run it)
     if args.action == GistAction.RUN:

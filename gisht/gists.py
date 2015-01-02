@@ -30,6 +30,8 @@ def run_gist(gist, args=()):
 
     :param args: Arguments to pass to the gist
     """
+    logger.info("running gist %s ...", gist)
+
     # TODO(xion): check for the existence of proper shebang,
     # and if it's not there, deduce correct interpreter based on extension
     # of the symlinks target
