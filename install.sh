@@ -16,8 +16,7 @@ RUNNER_SCRIPT="/usr/local/bin/$APP"
 
 main() {
     if which "$APP" >/dev/null; then
-        log "FATAL: $APP is already installed."
-        exit
+        log "WARN: $APP is already installed; will reinstall."
     fi
 
     require python "Python not found -- aborting!"
@@ -49,13 +48,14 @@ ensure_virtualenv() {
 install_python_package() {
     log "INFO: Installing $APP Python package..."
 
+    # perform clean install by removing any existing installations first
+    yes | pip uninstall $APP --log-file /dev/null >/dev/null  # quiet!
+
     # either install the package from current directory
     # or get it directly from PyPI
     if [ -f "./$APP/__init__.py" ]; then
         pip install -e .
     else
-        # perform clean install by removing any existing installations first
-        pip uninstall $APP --log-file /dev/null >/dev/null  # quiet!
         pip install $APP
     fi
 }
