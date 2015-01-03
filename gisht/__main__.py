@@ -15,6 +15,7 @@ from gisht.args import GistAction, parse_argv
 from gisht.gists import (
     download_gist, gist_exists,
     output_gist_binary_path, print_gist, run_gist, show_gist_info)
+from gisht.util import error
 
 
 def main(argv=sys.argv):
@@ -85,7 +86,6 @@ def setup_logging(level):
     logging.getLogger().addHandler(handler)
 
 
-
 def display_warning():
     """Displays a warning about executing untrusted code
     and ask the user to continue.
@@ -104,17 +104,6 @@ def display_warning():
     print("Do you want to continue? [y/N]: ", end="", file=sys.stderr)
     answer = raw_input()
     return answer.lower().strip() == 'y'
-
-
-# Utility functions
-
-def error(msg, *args, **kwargs):
-    """Output an error message to stderr and end the program.
-    :param exitcode: Optional keyword argument to specify the exit code
-    """
-    msg = msg % args if args else msg
-    logger.error("%s: error: %s", os.path.basename(sys.argv[0]), msg)
-    raise SystemExit(kwargs.pop('exitcode', 1))
 
 
 if __name__ == '__main__':

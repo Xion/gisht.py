@@ -13,7 +13,7 @@ from tabulate import tabulate
 
 from gisht import BIN_DIR, GISTS_DIR, logger
 from gisht.github import get_gist_info, iter_gists
-from gisht.util import ensure_path
+from gisht.util import ensure_path, fatal
 
 
 __all__ = [
@@ -55,8 +55,7 @@ def print_gist(gist):
         logger.debug("executable for gist %s found at %s", gist, gist_exec)
     else:
         # TODO(xion): inconsistent state; we should detect those and clean up
-        logger.fatal("executable for gist %s missing!", gist)
-        raise SystemExit(os.EX_SOFTWARE)
+        fatal("executable for gist %s missing!", gist, exitcode=os.EX_SOFTWARE)
 
     with gist_exec.open() as f:
         sys.stdout.write(f.read())
