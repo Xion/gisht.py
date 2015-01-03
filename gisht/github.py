@@ -25,6 +25,9 @@ def get_gist_info(gist_id):
     :return: Dictionary with gist information
     :raises: :class:`requests.exception.HTTPError`
     """
+    if '/' in gist_id:
+        raise ValueError("expected gist ID, not the <owner>/<name> reference!")
+
     github = GitHub()
     response = github.gists.GET(gist_id)
     response.raise_for_status()
