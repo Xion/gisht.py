@@ -28,8 +28,10 @@ main() {
     create_runner_script
 
     log "INFO: Installation complete."
-    log "$APP should be available under \`$APP\` command"
-    log "(If not, make sure $RUNNER_SCRIPT is in \$PATH, or create an alias)."
+    log "$APP should be available through \`$APP\` command"
+    log "(If not, %s, or %s)" \
+        "make sure $(dirname "$RUNNER_SCRIPT") is in \$PATH" \
+        "create an alias to $RUNNER_SCRIPT"
 }
 
 ensure_virtualenv() {
@@ -82,7 +84,7 @@ require() {
     local msg="${2-$prog not found, aborting.}"
     if ! which "$prog" >/dev/null; then
         log "FATAL: $msg"
-        exit 1
+        exit 69  # EX_UNAVAILABLE
     fi
 }
 
