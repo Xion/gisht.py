@@ -29,8 +29,10 @@ def main(argv=sys.argv):
 
     # during the first run, display a warning about executing untrusted code
     if not APP_DIR.exists():
-        if not display_warning():
-            return 2
+        if logger.getEffectiveLevel() >= logging.WARNING:
+            acknowledged = display_warning()
+            if not acknowledged:
+                return 2
         APP_DIR.mkdir(parents=True)
 
     gist = args.gist

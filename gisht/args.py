@@ -152,7 +152,7 @@ def add_logging_group(parser):
     group = parser.add_argument_group(
         "Verbosity", "Only errors are printed by default") \
         .add_mutually_exclusive_group()
-    group.set_defaults(log_level=logging.ERROR)
+    group.set_defaults(log_level=logging.WARNING)
 
     class LogLevelAction(argparse.Action):
         """Custom argument parser's :class:`Action` for handling
