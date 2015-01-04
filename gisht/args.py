@@ -8,7 +8,7 @@ import logging
 
 import argcomplete
 
-from gisht import __version__
+from gisht import __version__, BIN_DIR
 from gisht.github import iter_gists
 
 
@@ -222,9 +222,11 @@ def gist_completer(prefix, parsed_args, **kwargs):
 
     :return: Iterable of possible completions
     """
-    # username needs to be typed fully before completion is attempted
+    # if username wasn't fully typed, provide the list of known GitHub users
     if '/' not in prefix:
-        return ()
+        return (d.stem + '/' for d in BIN_DIR.iterdir()
+                if d.is_dir() and d.stem.startswith(prefix))
+        # TODO(xion): also include all the actual gists from local cache
 
     owner, name_prefix = prefix.split('/')
 
