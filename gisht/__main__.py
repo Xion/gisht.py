@@ -99,7 +99,7 @@ def display_warning():
         "Never run gists that you haven't authored, and/or do not trust.",
         "Doing so is dangerous, and may expose your system to security risks!",
         "",
-        "(This warning won't be shown again).",
+        "(If you continue, this warning won't be shown again).",
         "",
         sep=os.linesep, file=sys.stderr)
 
