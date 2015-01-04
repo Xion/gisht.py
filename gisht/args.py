@@ -48,7 +48,7 @@ class GistAction(Enum):
     INFO = 'info'
 
 
-# Argument parser creation
+# Argument parser definition
 
 def create_argv_parser():
     """Create a :class:`argparse.ArgumentParser` object
@@ -84,20 +84,6 @@ def add_gist_group(parser):
     """
     group = parser.add_argument_group(
         "Gist", "Specifies the gist, optionally with flags")
-
-    def gist(value):
-        """Converter/validator for the GIST command line argument."""
-        try:
-            owner, gist_name = value.split('/')
-        except ValueError:
-            raise argparse.ArgumentTypeError(
-                "%r is not a valid gist reference; "
-                "try '<owner>/`<name>`" % (value,))
-        if owner and gist_name:
-            return value
-        else:
-            raise argparse.ArgumentTypeError(
-                "neither gist owner or name can be empty (got %r)" % (value,))
 
     group.add_argument('gist', type=gist,
                        help="GitHub gist, specified as <owner>/<name> "
@@ -157,26 +143,6 @@ def add_logging_group(parser):
         .add_mutually_exclusive_group()
     group.set_defaults(log_level=logging.WARNING)
 
-    class LogLevelAction(argparse.Action):
-        """Custom argument parser's :class:`Action` for handling
-        log level / verbosity flags.
-        """
-        DEFAULT_LEVEL = logging.INFO
-        DEFAULT_INCREMENT = 10
-        DEFAULT_MINIMUM = logging.NOTSET
-        DEFAULT_MAXIMUM = logging.CRITICAL
-
-        def __init__(self, *args, **kwargs):
-            self.min = kwargs.pop('min', self.DEFAULT_MINIMUM)
-            self.max = kwargs.pop('max', self.DEFAULT_MAXIMUM)
-            kwargs.setdefault('const', self.DEFAULT_INCREMENT)
-            super(LogLevelAction, self).__init__(*args, nargs=0, **kwargs)
-
-        def __call__(self, parser, namespace, values, option_string=None):
-            current = getattr(namespace, self.dest, self.DEFAULT_LEVEL)
-            new = max(self.min, min(self.max, current + self.const))
-            setattr(namespace, self.dest, new)
-
     group.add_argument('-v', '--verbose', dest='log_level',
                        action=LogLevelAction,
                        const=-LogLevelAction.DEFAULT_INCREMENT,
@@ -202,3 +168,41 @@ def add_misc_group(parser):
                        help="show this help message and exit")
 
     return group
+
+
+# Supporting code
+
+def gist(value):
+    """Converter/validator for the GIST command line argument."""
+    try:
+        owner, gist_name = value.split('/')
+    except ValueError:
+        raise argparse.ArgumentTypeError(
+            "%r is not a valid gist reference; try '<owner>/`<name>`" % value)
+    if owner and gist_name:
+        return value
+    else:
+        raise argparse.ArgumentTypeError(
+            "neither gist owner or name can be empty (got %r)" % (value,))
+
+
+class LogLevelAction(argparse.Action):
+    """Custom argument parser's :class:`Action` for handling
+    log level / verbosity flags.
+    """
+    DEFAULT_LEVEL = logging.INFO
+    DEFAULT_INCREMENT = 10
+    DEFAULT_MINIMUM = logging.NOTSET
+    DEFAULT_MAXIMUM = logging.CRITICAL
+
+    def __init__(self, *args, **kwargs):
+        self.min = kwargs.pop('min', self.DEFAULT_MINIMUM)
+        self.max = kwargs.pop('max', self.DEFAULT_MAXIMUM)
+        kwargs.setdefault('const', self.DEFAULT_INCREMENT)
+        super(LogLevelAction, self).__init__(*args, nargs=0, **kwargs)
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        current = getattr(namespace, self.dest, self.DEFAULT_LEVEL)
+        new = max(self.min, min(self.max, current + self.const))
+        setattr(namespace, self.dest, new)
+
