@@ -43,6 +43,13 @@ Other gist actions
 * -s/--star for starring gists (requires acting as user, see Private gists)
 * -c/--comment for leaving comments (as above)
 
+Distribution
+~~~~~~~~~~~~
+
+* Create a Debian package
+* Create a Homebrew formula
+* Create an RPM package
+
 Project health
 ~~~~~~~~~~~~~~
 
