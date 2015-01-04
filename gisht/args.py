@@ -6,6 +6,8 @@ from enum import Enum
 from itertools import chain
 import logging
 
+import argcomplete
+
 from gisht import __version__
 
 
@@ -30,6 +32,7 @@ def parse_argv(argv):
         argv = argv[:double_dash_pos]
 
     parser = create_argv_parser()
+    argcomplete.autocomplete(parser)
 
     # TODO(xion): support reading default parameter values from ~/.gishtrc
     result = parser.parse_args(argv[1:])

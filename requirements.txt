@@ -1,5 +1,6 @@
 # Required dependencies
 
+argcomplete
 envoy
 hammock
 requests>=1.0
