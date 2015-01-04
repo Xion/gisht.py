@@ -7,6 +7,7 @@ from itertools import chain
 import logging
 
 import argcomplete
+import requests
 
 from gisht import __version__, BIN_DIR
 from gisht.github import iter_gists
@@ -222,20 +223,33 @@ def gist_completer(prefix, parsed_args, **kwargs):
 
     :return: Iterable of possible completions
     """
-    # if username wasn't fully typed, provide the list of known GitHub users
-    if '/' not in prefix:
-        return (d.stem + '/' for d in BIN_DIR.iterdir()
-                if d.is_dir() and d.stem.startswith(prefix))
-        # TODO(xion): also include all the actual gists from local cache
+    results = set()
 
-    owner, name_prefix = prefix.split('/')
+    # start with the locally available gists, possibly including entries
+    # for GitHub users whose gists we have cached (if autocomplete prefix
+    # does not include a slash)
+    for entry in BIN_DIR.rglob('*'):
+        entry = '/'.join(entry.relative_to(BIN_DIR).parts)
+        if not entry.startswith(prefix):
+            continue
+        if '/' not in entry:
+            entry = entry + '/'
+        results.add(entry)
+    # TODO(xion): the above is somewhat redundant in typical case, when GitHub
+    # is available and user typed the owner part fully; elide it in this case
 
-    # TODO(xion): only complete on local gists if --local was provided
-    results = []
-    for gist_json in iter_gists(owner):  # TODO(xion): cache this LOL
-        for filename in gist_json['files'].keys():
-            if filename.startswith(name_prefix):
-                results.append(owner + '/' + filename)
-                break  # only add one (first) file per gist
+    # if username was given in full, query GitHub for that user's gist
+    # and include them in the suggestions
+    local = getattr(parsed_args, 'local', False)
+    if '/' in prefix and not local:
+        owner, name_prefix = prefix.split('/')
+        try:
+            for gist_json in iter_gists(owner):  # TODO(xion): cache this LOL
+                for filename in gist_json['files'].keys():
+                    if filename.startswith(name_prefix):
+                        results.add(owner + '/' + filename)
+                        break  # only add one (first) file per gist
+        except requests.exceptions.HTTPError:
+            pass  # limit to local completions if GitHub is unreachable
 
-    return results
+    return sorted(results)
