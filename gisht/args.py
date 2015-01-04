@@ -9,6 +9,7 @@ import logging
 import argcomplete
 
 from gisht import __version__
+from gisht.github import iter_gists
 
 
 __all__ = ['parse_argv', 'GistAction']
@@ -32,7 +33,12 @@ def parse_argv(argv):
         argv = argv[:double_dash_pos]
 
     parser = create_argv_parser()
-    argcomplete.autocomplete(parser)
+
+    # trigger autocompletion, unless gist args have been provided after --
+    # (otherwise they may be considered as part of GIST argument)
+    # TODO(xion): make ArgumentParser handle GIST_ARGS and remove this hack
+    if not gist_args:
+        argcomplete.autocomplete(parser)
 
     # TODO(xion): support reading default parameter values from ~/.gishtrc
     result = parser.parse_args(argv[1:])
@@ -88,7 +94,7 @@ def add_gist_group(parser):
     group.add_argument('gist', type=gist,
                        help="GitHub gist, specified as <owner>/<name> "
                             "(e.g. Octocat/foo)",
-                       metavar="GIST")
+                       metavar="GIST").completer = gist_completer
 
     group.add_argument('-l', '--local', '--cached',
                        default=False, action='store_true',
@@ -206,3 +212,28 @@ class LogLevelAction(argparse.Action):
         new = max(self.min, min(self.max, current + self.const))
         setattr(namespace, self.dest, new)
 
+
+def gist_completer(prefix, parsed_args, **kwargs):
+    """Autocompleter for the GIST command line argument.
+
+    It tries to complete the gist identifier (<owner>/<name>) by listing
+    all the gists for the typed <owner>, possibly filtered
+    through a prefix of <name>.
+
+    :return: Iterable of possible completions
+    """
+    # username needs to be typed fully before completion is attempted
+    if '/' not in prefix:
+        return ()
+
+    owner, name_prefix = prefix.split('/')
+
+    # TODO(xion): only complete on local gists if --local was provided
+    results = []
+    for gist_json in iter_gists(owner):  # TODO(xion): cache this LOL
+        for filename in gist_json['files'].keys():
+            if filename.startswith(name_prefix):
+                results.append(owner + '/' + filename)
+                break  # only add one (first) file per gist
+
+    return results
