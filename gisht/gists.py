@@ -81,10 +81,7 @@ def show_gist_info(gist):
     """Shows information about the gist specified by owner/name string."""
     logger.debug("fetching information about gist %s ...", gist)
 
-    gist_exec = (BIN_DIR / gist).resolve()
-    gist_id = gist_exec.parent.name
-    logger.debug("gist %s found to have ID=%s", gist, gist_id)
-
+    gist_id = get_gist_id(gist)
     gist_info = get_gist_info(gist_id)
     logger.info('information about gist %s retrieved successfully', gist)
 
@@ -112,6 +109,18 @@ def gist_exists(gist):
     """Checks if the gist specified by owner/name string exists."""
     gist_exec_symlink = BIN_DIR / gist
     return gist_exec_symlink.exists()  # also checks if symlink is not broken
+
+
+def get_gist_id(gist):
+    """Convert the gist specified by owner/name to gist ID."""
+    if not gist_exists(gist):
+        fatal("unknown gist %s")
+
+    gist_exec = (BIN_DIR / gist).resolve()
+    gist_id = gist_exec.parent.name
+    logger.debug("gist %s found to have ID=%s", gist, gist_id)
+
+    return gist_id
 
 
 def download_gist(gist):
