@@ -52,6 +52,7 @@ class GistAction(Enum):
     RUN = 'run'
     WHICH = 'which'
     PRINT = 'print'
+    OPEN = 'open'
     INFO = 'info'
 
 
@@ -131,6 +132,10 @@ def add_gist_action_group(parser):
     group.add_argument('-p', '--print', dest='action',
                        action='store_const', const=GistAction.PRINT,
                        help="print gist source on the standard output")
+    group.add_argument('-o', '--open', dest='action',
+                       action='store_const', const=GistAction.OPEN,
+                       help="open the gist's GitHub page "
+                            "in the default web browser")
     group.add_argument('-i', '--info', dest='action',
                        action='store_const', const=GistAction.INFO,
                        help="show summary information about specified gist")

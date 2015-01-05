@@ -7,6 +7,7 @@ from collections import OrderedDict
 import os
 from pathlib import Path
 import sys
+import webbrowser
 
 import envoy
 from tabulate import tabulate
@@ -17,7 +18,9 @@ from gisht.util import ensure_path, fatal
 
 
 __all__ = [
-    'run_gist', 'output_gist_binary_path', 'print_gist', 'show_gist_info',
+    'run_gist', 'output_gist_binary_path', 'print_gist',
+    'open_gist_page', 'show_gist_info',
+
     'gist_exists', 'download_gist',
 ]
 
@@ -59,6 +62,20 @@ def print_gist(gist):
 
     with gist_exec.open() as f:
         sys.stdout.write(f.read())
+
+
+def open_gist_page(gist):
+    """Open the gist's GitHub page in the default web browser."""
+    logger.debug("opening GitHub page for gist %s...", gist)
+
+    gist_id = get_gist_id(gist)
+    gist_info = get_gist_info(gist_id)
+
+    url = gist_info.get('html_url')
+    if not url:
+        fatal("unable to determine the URL of gist %s...", gist)
+
+    webbrowser.open_new_tab(url)
 
 
 #: Mapping of gist --info labels to keys in the GitHub API response

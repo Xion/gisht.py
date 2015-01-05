@@ -13,9 +13,9 @@ import requests
 
 from gisht import APP_DIR, logger
 from gisht.args import GistAction, parse_argv
-from gisht.gists import (
-    download_gist, gist_exists,
-    output_gist_binary_path, print_gist, run_gist, show_gist_info)
+from gisht.gists import (download_gist, gist_exists,
+                         open_gist_page, output_gist_binary_path,
+                         print_gist, run_gist, show_gist_info)
 from gisht.util import error
 
 
@@ -69,6 +69,8 @@ def main(argv=sys.argv):
             output_gist_binary_path(gist)
         elif args.action == GistAction.PRINT:
             print_gist(gist)
+        elif args.action == GistAction.OPEN:
+            open_gist_page(gist)
         elif args.action == GistAction.INFO:
             show_gist_info(gist)
 
