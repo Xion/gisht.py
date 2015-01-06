@@ -120,6 +120,9 @@ def add_gist_action_group(parser):
         .add_mutually_exclusive_group()
     group.set_defaults(action=GistAction.RUN)
 
+    # TODO(xion): nargs='?' is illegal here for some inane reason, so these
+    # flags can be specified more than once (if they're identical);
+    # find a way to make that an error (probably another custom action -_-)
     group.add_argument('-r', '--run', dest='action',
                        action='store_const', const=GistAction.RUN,
                        help="run specified gist; this is the default behavior "

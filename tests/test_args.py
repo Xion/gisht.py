@@ -9,7 +9,7 @@ except ImportError:
     from io import StringIO  # Python 3.x
 import sys
 
-from taipan.testing import before, TestCase
+from taipan.testing import before, expectedFailure, TestCase
 
 import gisht.args as __unit__
 
@@ -59,6 +59,37 @@ class ParseArgv(TestCase):
     def test_gist__valid(self):
         args = self._invoke(self.GIST)
         self.assertEquals(self.GIST, args.gist)
+
+    def test_action__default(self):
+        args = self._invoke(self.GIST)
+        self.assertEquals(__unit__.GistAction.RUN, args.action)
+
+    def test_action__explicit__short(self):
+        args = self._invoke('-r', self.GIST)
+        self.assertEquals(__unit__.GistAction.RUN, args.action)
+
+    def test_action__explicit__long(self):
+        args = self._invoke('--run', self.GIST)
+        self.assertEquals(__unit__.GistAction.RUN, args.action)
+
+    @expectedFailure
+    def test_action__multiple__duplicate(self):
+        # supplying the same action flag multiple times makes no sense
+        # and should be illegal. Unfortunately, there is no way to tell that
+        # to the ArgumentParser :-(
+        with self._assertExit(2) as r:
+            args = self._invoke('-r', '-r', self.GIST)
+
+        self.assertIn("usage", r.stderr)
+        self.assertIn('-r', r.stderr)
+
+    def test_action__multiple__distinct(self):
+        with self._assertExit(2) as r:
+            self._invoke('-r', '-p', self.GIST)
+
+        self.assertIn("usage", r.stderr)
+        self.assertIn('-r', r.stderr)
+        self.assertIn('-p', r.stderr)
 
     # TODO(xion): add more tests for real argument sets
 
