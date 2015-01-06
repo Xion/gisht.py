@@ -78,7 +78,7 @@ class ParseArgv(TestCase):
         # and should be illegal. Unfortunately, there is no way to tell that
         # to the ArgumentParser :-(
         with self._assertExit(2) as r:
-            args = self._invoke('-r', '-r', self.GIST)
+            self._invoke('-r', '-r', self.GIST)
 
         self.assertIn("usage", r.stderr)
         self.assertIn('-r', r.stderr)
