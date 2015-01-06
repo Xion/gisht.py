@@ -17,6 +17,8 @@ import gisht.args as __unit__
 class ParseArgv(TestCase):
     PROG = 'gisht'
 
+    GIST = 'Example/gist'
+
     def test_empty(self):
         with self._assertExit(2) as r:
             self._invoke()
@@ -36,7 +38,29 @@ class ParseArgv(TestCase):
             # TODO(xion): add epilog= to ArgumentParser and assert on that
             self.assertIn(flag, r.stdout)
 
-    # TODO(xion): add tests for real argument sets
+    def test_gist__invalid__no_slash(self):
+        invalid_gist = self.GIST.replace('/', '')
+
+        with self._assertExit(2) as r:
+            self._invoke(invalid_gist)
+
+        self.assertIn("usage", r.stderr)
+        self.assertIn(invalid_gist, r.stderr)
+
+    def test_gist__invalid__trailing_slash(self):
+        invalid_gist = self.GIST[:self.GIST.find('/') + 1]
+
+        with self._assertExit(2) as r:
+            self._invoke(invalid_gist)
+
+        self.assertIn("usage", r.stderr)
+        self.assertIn(invalid_gist, r.stderr)
+
+    def test_gist__valid(self):
+        args = self._invoke(self.GIST)
+        self.assertEquals(self.GIST, args.gist)
+
+    # TODO(xion): add more tests for real argument sets
 
     def _invoke(self, *args):
         return __unit__.parse_argv([self.PROG] + list(args))
