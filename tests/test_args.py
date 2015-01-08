@@ -19,6 +19,8 @@ class ParseArgv(TestCase):
 
     GIST = 'Example/gist'
 
+    DEFAULT_LOG_LEVEL = __unit__.LogLevelAction.DEFAULT_LEVEL
+
     def test_empty(self):
         with self._assertExit(2) as r:
             self._invoke()
@@ -90,6 +92,14 @@ class ParseArgv(TestCase):
         self.assertIn("usage", r.stderr)
         self.assertIn('-r', r.stderr)
         self.assertIn('-p', r.stderr)
+
+    def test_logging__intensify(self):
+        verbose_level = self._invoke('-v', self.GIST).log_level
+        self.assertLess(verbose_level, self.DEFAULT_LOG_LEVEL)
+
+    def test_logging__dampen(self):
+        quiet_level = self._invoke('-q', self.GIST).log_level
+        self.assertGreater(quiet_level, self.DEFAULT_LOG_LEVEL)
 
     # TODO(xion): add more tests for real argument sets
 

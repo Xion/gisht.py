@@ -10,6 +10,8 @@
 
 APP='gisht'
 
+# TODO(xion): fall back to ~/.gisht/env and ~/bin if /usr/local isn't writeable
+# (typical on Linux, as opposed to OS X)
 VIRTUALENV_DIR="/usr/local/$APP"
 RUNNER_SCRIPT="/usr/local/bin/$APP"
 

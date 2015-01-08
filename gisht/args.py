@@ -154,9 +154,9 @@ def add_logging_group(parser):
     :return: Resulting argument group
     """
     group = parser.add_argument_group(
-        "Verbosity", "Only errors are printed by default") \
+        "Verbosity", "Only errors and warnings are printed by default") \
         .add_mutually_exclusive_group()
-    group.set_defaults(log_level=logging.WARNING)
+    group.set_defaults(log_level=LogLevelAction.DEFAULT_LEVEL)
 
     group.add_argument('-v', '--verbose', dest='log_level',
                        action=LogLevelAction,
@@ -205,7 +205,8 @@ class LogLevelAction(argparse.Action):
     """Custom argument parser's :class:`Action` for handling
     log level / verbosity flags.
     """
-    DEFAULT_LEVEL = logging.INFO
+    DEFAULT_LEVEL = logging.WARNING
+
     DEFAULT_INCREMENT = 10
     DEFAULT_MINIMUM = logging.NOTSET
     DEFAULT_MAXIMUM = logging.CRITICAL
