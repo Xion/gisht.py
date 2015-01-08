@@ -10,10 +10,13 @@
 
 APP='gisht'
 
-# TODO(xion): fall back to ~/.gisht/env and ~/bin if /usr/local isn't writeable
-# (typical on Linux, as opposed to OS X)
-VIRTUALENV_DIR="/usr/local/$APP"
-RUNNER_SCRIPT="/usr/local/bin/$APP"
+DEFAULT_VENV_DIR="/usr/local/$APP"
+FALLBACK_VENV_DIR="~/.$APP/venv"
+
+DEFAULT_RUNNER_SCRIPT="/usr/local/bin/$APP"
+FALLBACK_RUNNER_SCRIPT=""
+
+_fallback_used=""
 
 
 main() {
@@ -29,24 +32,41 @@ main() {
 
     create_runner_script
 
+    local runner_script="$(get_runner_script_path)"
     log "INFO: Installation complete."
     log "$APP should be available through \`$APP\` command"
     log "(If not, %s, or %s)" \
-        "make sure $(dirname "$RUNNER_SCRIPT") is in \$PATH" \
-        "create an alias to $RUNNER_SCRIPT"
+        "make sure $(dirname "$runner_script") is in \$PATH" \
+        "create an alias to $runner_script"
 }
+
+
+# virtualenv creation
 
 ensure_virtualenv() {
     # unless we're already inside a Python virtualenv, we need to create one
     if [ -z "$VIRTUAL_ENV" ]; then
         require virtualenv
 
+        local venv_dir="$(get_venv_dir)"
         log "INFO: Creating new virtualenv for $APP..."
-        virtualenv --quiet "$VIRTUALENV_DIR" --no-site-packages
-        source "$VIRTUALENV_DIR/bin/activate"
+        virtualenv --quiet "$venv_dir" --no-site-packages
+        source "$venv_dir/bin/activate"
     else
         log "WARN: Installing within existing virtualenv: $VIRTUAL_ENV"
     fi
+}
+
+get_venv_dir() {
+    # if we cannot put virtualenv in a "global" place,
+    # use a directory under user's $HOME as a fallback
+    local venv_dir="$DEFAULT_VENV_DIR"
+    if [ -n "$_fallback_used" ] || [ ! -w "$(dirname "$venv_dir")" ]; then
+        venv_dir="$FALLBACK_VENV_DIR"
+        mkdir -p "$(dirname "$venv_dir")"
+        _fallback_used="true"
+    fi
+    echo "$venv_dir"
 }
 
 install_python_package() {
@@ -64,17 +84,33 @@ install_python_package() {
     fi
 }
 
+
+# Runner script generation
+
 create_runner_script() {
-    log "INFO: Creating runner script in %s..." "$(dirname "$RUNNER_SCRIPT")"
+    local runner_script="$(get_runner_script_path)"
+    log "INFO: Creating runner script in %s..." "$(dirname "$runner_script")"
 
     # create simple wrapper script that activates the virtualenv
     # and runs the application
-    cat >"$RUNNER_SCRIPT" <<END
+    cat >"$runner_script" <<END
 #!/bin/sh
 source "$VIRTUAL_ENV/bin/activate"
 $APP "\$@"
 END
-    chmod a+x "$RUNNER_SCRIPT"
+    chmod a+x "$runner_script"
+}
+
+get_runner_script_path() {
+    # similary to get_venv_dir(), fallvack to user's $HOME location
+    # if we don't have permissions to write into the "global" one
+    local runner_script="$DEFAULT_RUNNER_SCRIPT"
+    if [ -n "$_fallback_used" ] || [ ! -w "$(dirname "$runner_script")" ]; then
+        runner_script="$FALLBACK_RUNNER_SCRIPT"
+        mkdir -p "$(dirname "$runner_script")"
+        _fallback_used="true"
+    fi
+    echo "$runner_script"
 }
 
 
