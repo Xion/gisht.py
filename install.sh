@@ -136,11 +136,12 @@ display_autocomplete_instructions() {
     local shell="$(basename "$SHELL")"
     if [ "$shell" != 'bash' ] && [ "$shell" != 'zsh' ]; then
         log "WARN: Autocompletion is not supported by your shell :("
-        return 1
+        return 69  # EX_UNAVAILABLE
     fi
 
     log "For autocompletion, add the following to your ~/.${shell}rc:"
     out "\n"
+    out "    # Autocompletion for \`gisht\` command\n"
     if [ "$shell" = 'zsh' ]; then
         out "    autoload bashcompinit\n"
         out "    bashcompinit\n"
