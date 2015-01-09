@@ -7,6 +7,8 @@
 #   curl -L https://github.com/Xion/gisht/raw/master/install.sh | sh
 #   git clone https://github.com/Xion/gisht.git && cd gisht && ./install.sh
 
+set -e
+
 
 APP='gisht'
 
@@ -32,12 +34,9 @@ main() {
 
     create_runner_script
 
-    local runner_script="$(get_runner_script_path)"
-    log "INFO: Installation complete."
-    log "$APP should be available through \`$APP\` command"
-    log "(If not, %s, or %s)" \
-        "make sure $(dirname "$runner_script") is in \$PATH" \
-        "create an alias to $runner_script"
+    display_completion_message
+    log ""  # empty line
+    display_autocomplete_instructions
 }
 
 
@@ -111,6 +110,41 @@ get_runner_script_path() {
         _fallback_used="true"
     fi
     echo "$runner_script"
+}
+
+
+# Finalization
+
+display_completion_message() {
+    log "INFO: Installation complete."
+    log "$APP should be available through \`$APP\` command"
+
+    local runner_script="$(get_runner_script_path)"
+    log "(If not, %s, or %s)" \
+        "make sure $(dirname "$runner_script") is in \$PATH" \
+        "create an alias to $runner_script"
+}
+
+display_autocomplete_instructions() {
+    local shell=""
+    if [ -n "$BASH" ]; then
+        shell='bash'
+    elif [ -n "$ZSH_NAME" ]; then
+        shell='zsh'
+    else
+        log "WARN: Autocompletion is not supported by your shell :("
+        return 1
+    fi
+
+    log "For autocompletion, add the following to your ~/.${shell}rc:"
+    log ""
+    if [ "$shell" = 'zsh' ]; then
+        log "    autoload bashcompinit"
+        log "    bashcompinit"
+    fi
+    log "    source \"$VIRTUAL_ENV/bin/activate\""
+    log "    eval \"\$(register-python-argcomplete gisht)\""
+    log "    deactivate"
 }
 
 
