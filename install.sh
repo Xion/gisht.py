@@ -19,6 +19,7 @@ DEFAULT_RUNNER_SCRIPT="/usr/local/bin/$APP"
 FALLBACK_RUNNER_SCRIPT=""
 
 _fallback_used=""
+_venv_created=""
 
 
 main() {
@@ -37,6 +38,10 @@ main() {
     display_completion_message
     out "\n"
     display_autocomplete_instructions
+
+    if [ -n "$venv_created" ]; then
+        deactivate
+    fi
 }
 
 
@@ -51,6 +56,8 @@ ensure_virtualenv() {
         log "INFO: Creating new virtualenv for $APP..."
         virtualenv --quiet "$venv_dir" --no-site-packages
         source "$venv_dir/bin/activate"
+
+        _venv_created="true"
     else
         log "WARN: Installing within existing virtualenv: $VIRTUAL_ENV"
     fi
