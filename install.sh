@@ -35,7 +35,7 @@ main() {
     create_runner_script
 
     display_completion_message
-    log ""  # empty line
+    out "\n"
     display_autocomplete_instructions
 }
 
@@ -126,25 +126,21 @@ display_completion_message() {
 }
 
 display_autocomplete_instructions() {
-    local shell=""
-    if [ -n "$BASH" ]; then
-        shell='bash'
-    elif [ -n "$ZSH_NAME" ]; then
-        shell='zsh'
-    else
+    local shell="$(basename "$SHELL")"
+    if [ "$shell" != 'bash' ] && [ "$shell" != 'zsh' ]; then
         log "WARN: Autocompletion is not supported by your shell :("
         return 1
     fi
 
     log "For autocompletion, add the following to your ~/.${shell}rc:"
-    log ""
+    out "\n"
     if [ "$shell" = 'zsh' ]; then
-        log "    autoload bashcompinit"
-        log "    bashcompinit"
+        out "    autoload bashcompinit\n"
+        out "    bashcompinit\n"
     fi
-    log "    source \"$VIRTUAL_ENV/bin/activate\""
-    log "    eval \"\$(register-python-argcomplete gisht)\""
-    log "    deactivate"
+    out "    source \"$VIRTUAL_ENV/bin/activate\"\n"
+    out "    eval \"\$(register-python-argcomplete gisht)\"\n"
+    out "    deactivate\n"
 }
 
 
@@ -162,7 +158,11 @@ require() {
 
 log() {
     local fmt="$1" ; shift
-    printf >&2 ">>> $fmt\n" "$@"
+    out ">>> $fmt\n" "$@"
+}
+
+out() {
+    printf >&2 "$@"
 }
 
 
