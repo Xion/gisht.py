@@ -6,9 +6,6 @@ Interface improvements
 
 * ~/.gishtrc support
 * Correcting misspelt gist names
-* Autocompletion of gists (from local cache)
-* Autocompletion of gist names after `user/` is typed
-  (first from local cache and then GitHub)
 
 Private gists
 ~~~~~~~~~~~~~
@@ -53,5 +50,4 @@ Distribution
 Project health
 ~~~~~~~~~~~~~~
 
-* More tests
 * Move development off `master` branch into named feature branches
