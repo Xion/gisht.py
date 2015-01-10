@@ -4,11 +4,11 @@ Module defining data types used in command line parsing.
 from enum import Enum
 
 
-__all__ = ['GistAction']
+__all__ = ['GistCommand']
 
 
-class GistAction(Enum):
-    """Action to undertake towards the gist."""
+class GistCommand(Enum):
+    """Command to carry out against the gist."""
 
     #: Run the gist's code. This should be the default.
     RUN = 'run'

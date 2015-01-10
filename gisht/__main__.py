@@ -13,7 +13,7 @@ import requests
 
 from gisht import APP_DIR, logger
 from gisht.args import parse_argv
-from gisht.args.data import GistAction
+from gisht.args.data import GistCommand
 from gisht.gists import (download_gist, gist_exists,
                          open_gist_page, output_gist_binary_path,
                          print_gist, run_gist, show_gist_info)
@@ -58,21 +58,21 @@ def main(argv=sys.argv):
                 error("HTTP error: %s", e, exitcode=os.EX_UNAVAILABLE)
 
     # do with the gist what the user has requested (default: run it)
-    if args.action == GistAction.RUN:
+    if args.command == GistCommand.RUN:
         run_gist(gist, gist_args)
-    elif args.action not in GistAction:
-        error("unknown gist action %r", args.action, exitcode=os.EX_USAGE)
+    elif args.command not in GistCommand:
+        error("unknown gist action %r", args.command, exitcode=os.EX_USAGE)
     else:
         if gist_args:
             error("gist arguments are only allowed when running the gist",
                   exitcode=os.EX_USAGE)
-        if args.action == GistAction.WHICH:
+        if args.command == GistCommand.WHICH:
             output_gist_binary_path(gist)
-        elif args.action == GistAction.PRINT:
+        elif args.command == GistCommand.PRINT:
             print_gist(gist)
-        elif args.action == GistAction.OPEN:
+        elif args.command == GistCommand.OPEN:
             open_gist_page(gist)
-        elif args.action == GistAction.INFO:
+        elif args.command == GistCommand.INFO:
             show_gist_info(gist)
 
 

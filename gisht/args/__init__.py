@@ -2,10 +2,10 @@
 Package for handling command line arguments.
 """
 from gisht.args import autocomplete
-from gisht.args.parser import create_argv_parser, GistAction
+from gisht.args.parser import create_argv_parser
 
 
-__all__ = ['parse_argv', 'GistAction']
+__all__ = ['parse_argv']
 
 
 def parse_argv(argv):

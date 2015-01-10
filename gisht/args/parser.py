@@ -8,7 +8,7 @@ import logging
 
 from gisht import __version__
 from gisht.args.autocomplete import gist_completer
-from gisht.args.data import GistAction
+from gisht.args.data import GistCommand
 
 
 __all__ = ['create_argv_parser']
@@ -24,7 +24,7 @@ def create_argv_parser():
         add_help=False)
 
     add_gist_group(parser)
-    add_gist_action_group(parser)
+    add_gist_command_group(parser)
     add_logging_group(parser)
 
     misc_group = add_misc_group(parser)
@@ -82,39 +82,41 @@ def gist(value):
 
 # Gist action
 
-def add_gist_action_group(parser):
+def add_gist_command_group(parser):
     """Include an argument group that allows to specify
-    the action to be performed on the gist.
+    the command to be performed on the gist.
 
     :param parser: :class:`argparse.ArgumentParser`
     :return: Resulting argument group
     """
+    # 'command' is our internal wording, intended not to clash with
+    # ArgumentParser actions, but the UI shall refer to it still as 'action'
     group = parser.add_argument_group(
         "Actions", "Possible actions to perform on the gist") \
         .add_mutually_exclusive_group()
-    group.set_defaults(action=GistAction.RUN)
+    group.set_defaults(command=GistCommand.RUN)
 
     # TODO(xion): nargs='?' is illegal here for some inane reason, so these
     # flags can be specified more than once (if they're identical);
     # find a way to make that an error (probably another custom action -_-)
-    group.add_argument(*GistAction.RUN.flags, dest='action',
-                       action='store_const', const=GistAction.RUN,
+    group.add_argument(*GistCommand.RUN.flags, dest='command',
+                       action='store_const', const=GistCommand.RUN,
                        help="run specified gist; this is the default behavior "
                             "if no action was specified explicitly")
-    group.add_argument(*GistAction.WHICH.flags, dest='action',
-                       action='store_const', const=GistAction.WHICH,
+    group.add_argument(*GistCommand.WHICH.flags, dest='command',
+                       action='store_const', const=GistCommand.WHICH,
                        help="output the path to binary which would be "
                             "ran for given gist; useful for passing it "
                             "to other commands via $( )")
-    group.add_argument(*GistAction.PRINT.flags, dest='action',
-                       action='store_const', const=GistAction.PRINT,
+    group.add_argument(*GistCommand.PRINT.flags, dest='command',
+                       action='store_const', const=GistCommand.PRINT,
                        help="print gist source on the standard output")
-    group.add_argument(*GistAction.OPEN.flags, dest='action',
-                       action='store_const', const=GistAction.OPEN,
+    group.add_argument(*GistCommand.OPEN.flags, dest='command',
+                       action='store_const', const=GistCommand.OPEN,
                        help="open the gist's GitHub page "
                             "in the default web browser")
-    group.add_argument(*GistAction.INFO.flags, dest='action',
-                       action='store_const', const=GistAction.INFO,
+    group.add_argument(*GistCommand.INFO.flags, dest='command',
+                       action='store_const', const=GistCommand.INFO,
                        help="show summary information about specified gist")
 
     return group
