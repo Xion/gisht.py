@@ -12,6 +12,8 @@ import sys
 from taipan.testing import before, expectedFailure, TestCase
 
 import gisht.args as __unit__
+from gisht.args.data import GistCommand
+from gisht.args.parser import LogLevelAction
 
 
 class ParseArgv(TestCase):
@@ -19,7 +21,7 @@ class ParseArgv(TestCase):
 
     GIST = 'Example/gist'
 
-    DEFAULT_LOG_LEVEL = __unit__.LogLevelAction.DEFAULT_LEVEL
+    DEFAULT_LOG_LEVEL = LogLevelAction.DEFAULT_LEVEL
 
     def test_empty(self):
         with self._assertExit(2) as r:
@@ -62,17 +64,17 @@ class ParseArgv(TestCase):
         args = self._invoke(self.GIST)
         self.assertEquals(self.GIST, args.gist)
 
-    def test_action__default(self):
+    def test_command__default(self):
         args = self._invoke(self.GIST)
-        self.assertEquals(__unit__.GistAction.RUN, args.action)
+        self.assertEquals(GistCommand.RUN, args.command)
 
-    def test_action__explicit__short(self):
+    def test_command__explicit__short(self):
         args = self._invoke('-r', self.GIST)
-        self.assertEquals(__unit__.GistAction.RUN, args.action)
+        self.assertEquals(GistCommand.RUN, args.command)
 
-    def test_action__explicit__long(self):
+    def test_command__explicit__long(self):
         args = self._invoke('--run', self.GIST)
-        self.assertEquals(__unit__.GistAction.RUN, args.action)
+        self.assertEquals(GistCommand.RUN, args.command)
 
     @expectedFailure
     def test_action__multiple__duplicate(self):

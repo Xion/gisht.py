@@ -2,7 +2,6 @@
 Module containing code for creating the command line argument parser.
 """
 import argparse
-from enum import Enum
 from itertools import chain
 import logging
 
