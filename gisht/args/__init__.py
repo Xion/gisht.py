@@ -1,5 +1,5 @@
 """
-Module for parsing command line arguments.
+Package for handling command line arguments.
 """
 import argparse
 from enum import Enum
