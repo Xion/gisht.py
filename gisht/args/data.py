@@ -36,3 +36,10 @@ class GistCommand(Enum):
     @property
     def flags(self):
         return [self.short_flag, self.long_flag]
+
+    @classmethod
+    def for_flag(cls, flag):
+        """Return :class:`GistCommand` matching given command line flag."""
+        for cmd in cls:
+            if flag in (cmd.short_flag, cmd.long_flag):
+                return cmd

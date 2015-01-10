@@ -79,7 +79,7 @@ def gist(value):
             "neither gist owner or name can be empty (got %r)" % (value,))
 
 
-# Gist action
+# Gist command
 
 def add_gist_command_group(parser):
     """Include an argument group that allows to specify
@@ -95,30 +95,55 @@ def add_gist_command_group(parser):
         .add_mutually_exclusive_group()
     group.set_defaults(command=GistCommand.RUN)
 
-    # TODO(xion): nargs='?' is illegal here for some inane reason, so these
-    # flags can be specified more than once (if they're identical);
-    # find a way to make that an error (probably another custom action -_-)
-    group.add_argument(*GistCommand.RUN.flags, dest='command',
-                       action='store_const', const=GistCommand.RUN,
-                       help="run specified gist; this is the default behavior "
-                            "if no action was specified explicitly")
-    group.add_argument(*GistCommand.WHICH.flags, dest='command',
-                       action='store_const', const=GistCommand.WHICH,
-                       help="output the path to binary which would be "
-                            "ran for given gist; useful for passing it "
-                            "to other commands via $( )")
-    group.add_argument(*GistCommand.PRINT.flags, dest='command',
-                       action='store_const', const=GistCommand.PRINT,
-                       help="print gist source on the standard output")
-    group.add_argument(*GistCommand.OPEN.flags, dest='command',
-                       action='store_const', const=GistCommand.OPEN,
-                       help="open the gist's GitHub page "
-                            "in the default web browser")
-    group.add_argument(*GistCommand.INFO.flags, dest='command',
-                       action='store_const', const=GistCommand.INFO,
-                       help="show summary information about specified gist")
+    gist_commands = {
+        GistCommand.RUN: "run specified gist; this is the default behavior "
+                         "if no action was specified explicitly",
+        GistCommand.WHICH: "output the path to binary which would be "
+                           "ran for given gist; useful for passing it "
+                           "to other commands via $( )",
+        GistCommand.PRINT: "print gist source on the standard output",
+        GistCommand.OPEN: "open the gist's GitHub page "
+                          "in the default web browser",
+        GistCommand.INFO: "show summary information about specified gist",
+    }
+    for cmd, help in gist_commands.items():
+        group.add_argument(
+            *cmd.flags, dest='command', action=GistCommandAction, help=help)
 
     return group
+
+
+class GistCommandAction(argparse.Action):
+    """Custom argument parser's :class:`Action` for handling
+    gist command flags.
+    """
+    def __init__(self, **kwargs):
+        option_strings = kwargs.get('option_strings')
+        if not option_strings:
+            raise TypeError("GistCommandAction can only be applied to flags")
+
+        # basing on supplied flag names, find the matching GistCommannd
+        commands = set(map(GistCommand.for_flag, option_strings))
+        if not commands:
+            raise ValueError(
+                "no gist command found matching flags %r" % (option_strings,))
+        if len(commands) > 1:
+            raise ValueError(
+                "ambiguous gist command for flags %r -- can be one of: %r" % (
+                    option_strings, commands))
+        kwargs['const'] = commands.pop()
+
+        super(GistCommandAction, self).__init__(nargs=0, **kwargs)
+
+        #: WHether we have already seen a gist command flag.
+        #: Used to prevent the same flag from being supplied twice.
+        self._seen = False
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        if self._seen:
+            raise argparse.ArgumentError(self, "can be specified at most once")
+        setattr(namespace, self.dest, self.const)
+        self._seen = True
 
 
 # Logging options
