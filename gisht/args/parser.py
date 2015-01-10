@@ -8,9 +8,10 @@ import logging
 
 from gisht import __version__
 from gisht.args.autocomplete import gist_completer
+from gisht.args.data import GistAction
 
 
-__all__ = ['create_argv_parser', 'GistAction']
+__all__ = ['create_argv_parser']
 
 
 def create_argv_parser():
@@ -38,15 +39,6 @@ def create_argv_parser():
         usage = usage.replace(" [%s]" % misc_flag, "")
     parser.usage = usage + " [-- GIST_ARGS]"
     return parser
-
-
-class GistAction(Enum):
-    """Action to undertake towards the gist."""
-    RUN = 'run'
-    WHICH = 'which'
-    PRINT = 'print'
-    OPEN = 'open'
-    INFO = 'info'
 
 
 # Gist specification
@@ -105,23 +97,23 @@ def add_gist_action_group(parser):
     # TODO(xion): nargs='?' is illegal here for some inane reason, so these
     # flags can be specified more than once (if they're identical);
     # find a way to make that an error (probably another custom action -_-)
-    group.add_argument('-r', '--run', dest='action',
+    group.add_argument(*GistAction.RUN.flags, dest='action',
                        action='store_const', const=GistAction.RUN,
                        help="run specified gist; this is the default behavior "
                             "if no action was specified explicitly")
-    group.add_argument('-w', '--which', dest='action',
+    group.add_argument(*GistAction.WHICH.flags, dest='action',
                        action='store_const', const=GistAction.WHICH,
                        help="output the path to binary which would be "
                             "ran for given gist; useful for passing it "
                             "to other commands via $( )")
-    group.add_argument('-p', '--print', dest='action',
+    group.add_argument(*GistAction.PRINT.flags, dest='action',
                        action='store_const', const=GistAction.PRINT,
                        help="print gist source on the standard output")
-    group.add_argument('-o', '--open', dest='action',
+    group.add_argument(*GistAction.OPEN.flags, dest='action',
                        action='store_const', const=GistAction.OPEN,
                        help="open the gist's GitHub page "
                             "in the default web browser")
-    group.add_argument('-i', '--info', dest='action',
+    group.add_argument(*GistAction.INFO.flags, dest='action',
                        action='store_const', const=GistAction.INFO,
                        help="show summary information about specified gist")
 

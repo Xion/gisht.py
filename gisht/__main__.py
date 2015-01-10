@@ -12,7 +12,8 @@ import sys
 import requests
 
 from gisht import APP_DIR, logger
-from gisht.args import GistAction, parse_argv
+from gisht.args import parse_argv
+from gisht.args.data import GistAction
 from gisht.gists import (download_gist, gist_exists,
                          open_gist_page, output_gist_binary_path,
                          print_gist, run_gist, show_gist_info)
