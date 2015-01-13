@@ -16,7 +16,7 @@ DEFAULT_VENV_DIR="/usr/local/$APP"
 FALLBACK_VENV_DIR="~/.$APP/venv"
 
 DEFAULT_RUNNER_SCRIPT="/usr/local/bin/$APP"
-FALLBACK_RUNNER_SCRIPT=""
+FALLBACK_RUNNER_SCRIPT="$HOME/bin/$APP"
 
 _fallback_used=""
 _venv_created=""
@@ -101,8 +101,7 @@ create_runner_script() {
     # and runs the application
     cat >"$runner_script" <<END
 #!/bin/sh
-source "$VIRTUAL_ENV/bin/activate"
-$APP "\$@"
+"$VIRTUAL_ENV/bin/$APP" "\$@"
 END
     chmod a+x "$runner_script"
 }
