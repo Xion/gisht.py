@@ -13,7 +13,7 @@ set -e
 APP='gisht'
 
 DEFAULT_VENV_DIR="/usr/local/$APP"
-FALLBACK_VENV_DIR="~/.$APP/venv"
+FALLBACK_VENV_DIR="$HOME/.$APP/venv"
 
 DEFAULT_RUNNER_SCRIPT="/usr/local/bin/$APP"
 FALLBACK_RUNNER_SCRIPT="$HOME/bin/$APP"
