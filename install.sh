@@ -55,7 +55,7 @@ ensure_virtualenv() {
         local venv_dir="$(get_venv_dir)"
         log "INFO: Creating new virtualenv for $APP..."
         virtualenv --quiet "$venv_dir" --no-site-packages
-        source "$venv_dir/bin/activate"
+        . "$venv_dir/bin/activate"
 
         _venv_created="true"
     else
@@ -79,7 +79,7 @@ install_python_package() {
     log "INFO: Installing $APP Python package..."
 
     # perform clean install by removing any existing installations first
-    yes | pip uninstall $APP --log-file /dev/null >/dev/null  # quiet!
+    yes | pip uninstall $APP --log-file /dev/null >/dev/null || true  # quiet!
 
     # either install the package from current directory
     # or get it directly from PyPI
