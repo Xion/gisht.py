@@ -14,7 +14,7 @@ from tabulate import tabulate
 
 from gisht import BIN_DIR, GISTS_DIR, logger
 from gisht.github import get_gist_info, iter_gists
-from gisht.util import ensure_path, fatal
+from gisht.util import ensure_path, error, fatal
 
 
 __all__ = [
@@ -35,11 +35,16 @@ def run_gist(gist, args=()):
     """
     logger.info("running gist %s ...", gist)
 
-    # TODO(xion): check for the existence of proper shebang,
-    # and if it's not there, deduce correct interpreter based on extension
-    # of the symlinks target
     cmd = bytes(BIN_DIR / gist)
-    os.execv(cmd, [cmd] + list(args))
+    try:
+        os.execv(cmd, [cmd] + list(args))
+    except OSError as e:
+        if e.errno == 8:  # Exec format error
+            # TODO(xion): deduce correct interpreter based on extension
+            # of the symlinks target or the MIME type from GitHub
+            error("can't run gist %s -- does it have a proper hashbang?", gist)
+        else:
+            raise
 
 
 def output_gist_binary_path(gist):
