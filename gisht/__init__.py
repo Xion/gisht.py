@@ -4,7 +4,7 @@ gisht
 
 * This program is free software, see LICENSE file for details. *
 """
-__version__ = "0.3"
+__version__ = "0.4-dev"
 __description__ = "Gists in the shell"
 __author__ = "Karol Kuczmarski"
 __license__ = "GPLv3"
