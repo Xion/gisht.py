@@ -74,10 +74,10 @@ class CachedHammock(Hammock):
     def _path(self):
         """Return only the path portion of the URL."""
         result = "/" if self._append_slash else ""
-        path_comp = self
-        while path_comp._parent:
-            result = "/" + path_comp._name + result
-            path_comp = path_comp._parent
+        path_component = self
+        while path_component._parent:
+            result = "/" + path_component._name + result
+            path_component = path_component._parent
         return result[1:] if len(result) > 1 else result  # no leading slash
 
     def _request(self, method, *args, **kwargs):
@@ -90,15 +90,35 @@ class CachedHammock(Hammock):
         if use_cache:
             url_path = self._chain(*args)._path()
             cache_file = Path(self._cache_dir) / url_path
-            if not self._expired(cache_file):
+            if self._expired(cache_file):
+                rv = self._on_cache_miss(url_path)
+                if rv is not None:
+                    return rv
+            else:
                 with cache_file.open('rb') as f:
-                    return pickle.load(f)
+                    cached_response = pickle.load(f)
 
-        # TODO(xion): if request has failed due to transient error,
-        # return the cached response even if it's expired, and show appropriate
-        # warning on stderr that data might be stale (on -i/--info)
-        response = super(CachedHammock, self)._request(method, *args, **kwargs)
-        # TODO(xion): the above logic should be also influenced by -/--local
+                # register the cache hit and possibly modify cached response
+                rv = self._on_cache_hit(url_path, cached_response)
+                if rv is not False:
+                    return cached_response if rv in (None, True) else rv
+
+        # issue the request if we couldn't find a cached response
+        try:
+            response = super(CachedHammock, self) \
+                ._request(method, *args, **kwargs)
+        except (requests.exceptions.ConnectionError,
+                requests.exceptions.Timeout,
+                requests.exceptions.RetryError):
+            # if the request has failed due to transient error,
+            # by default return the cached response even if it's expired
+            if use_cache and cache_file.exists():
+                with cache_file.open('rb') as f:
+                    cached_response = pickle.load(f)
+                rv = self._on_cache_rescue(url_path, cached_response)
+                if rv is not False:
+                    return cached_response if rv in (None, True) else rv
+            raise
 
         # save the obtained response to cache
         if use_cache:
@@ -116,6 +136,36 @@ class CachedHammock(Hammock):
         last_modify_time = datetime.fromtimestamp(last_modify_timestamp)
         return last_modify_time + self._cache_ttl <= datetime.now()
 
+    # Caching-related to events
+    # (to override in subclasses, if desired)
+
+    def _on_cache_miss(self, path):
+        """Invoked when given ``path`` does not have a cached response.
+
+        :return: Anything other than ``None`` will be used in lieu
+                 of the cached response (but it will **not** be saved
+                 in the actual cache).
+        """
+
+    def _on_cache_hit(self, path, content):
+        """Invoked when given request ``path`` has a non-stale ``content``
+        that can be returned as a response to the request.
+
+        :return: ``True`` or ``None`` if ``content`` shall be used as response.
+                 ``False`` if cache shall not be used for this request at all.
+                 Any other value will replace ``content`` as the response.
+        """
+
+    def _on_cache_rescue(self, path, content):
+        """Invoked when given request ``path`` cannot be accessed due
+        to network connectivity error, but there is cached ``content``
+        available.
+
+        :return: ``True`` or ``None`` if ``content`` shall be used as response.
+                 ``False`` if the error shall be propagated.
+                 Any other value will replace ``content`` as the response.
+        """
+
 
 class GitHub(CachedHammock):
     """Client for GitHub REST API."""
@@ -127,6 +177,15 @@ class GitHub(CachedHammock):
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('cache_dir', CACHE_DIR / 'github')
         super(GitHub, self).__init__(self.API_URL, *args, **kwargs)
+
+    def _on_cache_miss(self, path):
+        # TODO(xion): error out on -i/--info if -l/--local has been provided
+        pass
+
+    def _on_cache_rescue(self, path, content):
+        # TODO(xion):show appropriate warning on stderr
+        # that data might be stale (on -i/--info)
+        pass
 
 
 # Utility functions
