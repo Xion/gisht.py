@@ -21,7 +21,7 @@ __all__ = [
     'run_gist', 'output_gist_binary_path', 'print_gist',
     'open_gist_page', 'show_gist_info',
 
-    'gist_exists', 'download_gist',
+    'gist_exists', 'download_gist', 'update_gist',
 ]
 
 
@@ -192,6 +192,25 @@ def download_gist(gist):
             return True
 
     return False
+
+
+def update_gist(gist):
+    """Pull the latest version of the gist specified by owner/name string.
+
+    :return: Whether the gist has been successfully updated
+    """
+    logger.debug("updating gist %s ...", gist)
+
+    gist_id = get_gist_id(gist)
+    gist_dir = GISTS_DIR / gist_id
+    git_pull_run = run('git pull', cwd=str(gist_dir))
+    if git_pull_run.status_code != 0:
+        logger.warning("pulling changes to gist %s failed (exitcode %s)",
+                       gist, git_pull_run.status_code)
+        join(git_pull_run)
+    logger.info("gist %s successfully updated", gist)
+
+    return True
 
 
 # Utility functions

@@ -55,12 +55,16 @@ def add_gist_group(parser):
                             "(e.g. Octocat/foo)",
                        metavar="GIST").completer = gist_completer
 
-    group.add_argument('-l', '--local', '--cached',
-                       default=False, action='store_true',
-                       help="only run the gist if it's available locally "
-                            "(do not fetch it from GitHub)")
-    # TODO(xion): add a command line flag to always fetch the gist
-    # (removing the existing one if necessary, or doing a `git pull`)
+    fetch_group = group.add_mutually_exclusive_group()
+    fetch_group.set_defaults(local=None)
+    fetch_group.add_argument('-l', '--local', '--cached',
+                             action='store_true', dest='local',
+                             help="only run the gist if it's available locally"
+                                  " (do not fetch it from GitHub)")
+    fetch_group.add_argument('-f', '--fetch', '--remote',
+                             action='store_false', dest='local',
+                             help="always fetch the gist from GitHub, "
+                                  "possibly updating it to latest version")
 
     return group
 
@@ -122,7 +126,7 @@ class GistCommandAction(argparse.Action):
         if not option_strings:
             raise TypeError("GistCommandAction can only be applied to flags")
 
-        # basing on supplied flag names, find the matching GistCommannd
+        # basing upon supplied flag names, find the matching GistCommannd
         commands = set(map(GistCommand.for_flag, option_strings))
         if not commands:
             raise ValueError(
@@ -135,7 +139,7 @@ class GistCommandAction(argparse.Action):
 
         super(GistCommandAction, self).__init__(nargs=0, **kwargs)
 
-        #: WHether we have already seen a gist command flag.
+        #: Whether we have already seen a gist command flag.
         #: Used to prevent the same flag from being supplied twice.
         self._seen = False
 

@@ -14,7 +14,7 @@ import requests
 from gisht import APP_DIR, logger
 from gisht.args import parse_argv
 from gisht.args.data import GistCommand
-from gisht.gists import (download_gist, gist_exists,
+from gisht.gists import (download_gist, gist_exists, update_gist,
                          open_gist_page, output_gist_binary_path,
                          print_gist, run_gist, show_gist_info)
 from gisht.util import error
@@ -40,9 +40,13 @@ def main(argv=sys.argv):
     gist = args.gist
     gist_args = args.gist_args
 
-    # if the gist hasn't been cached locally, download it from GitHub
+    # download it from GitHub, if the gist hasn't been cached locally,
+    # or update it to latest revision if user requested that
     if gist_exists(gist):
         logger.debug("gist %s found among already downloaded gists", gist)
+        if args.local is False:
+            if not update_gist(gist):
+                error("failed to update gist %s")
     else:
         if args.local:
             error("gist %s is not available locally", gist,
