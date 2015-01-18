@@ -150,9 +150,6 @@ def download_gist(gist):
 
     :return: Whether the gist has been successfully downloaded
     """
-    # TODO(xion): make this idempotent, i.e. allowing gist to be downloaded
-    # multiple times if necessary (to perform updates)
-
     logger.debug("downloading gist %s ...", gist)
 
     owner, gist_name = gist.split('/', 1)

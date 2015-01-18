@@ -16,9 +16,7 @@ Private gists
 Improved gist management
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-* More robust download ("install") process
-* Forcing remote => aliasing => anonymous gist support
-* Gist updating?
+* Aliasing => anonymous gist support
 * Gist removal? (from cache/bin)
 
 Execution on steroids
