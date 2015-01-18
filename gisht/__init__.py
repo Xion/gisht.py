@@ -10,6 +10,7 @@ __author__ = "Karol Kuczmarski"
 __license__ = "GPLv3"
 
 
+import argparse
 import logging
 import os
 from pathlib import Path
@@ -35,3 +36,6 @@ CACHE_DIR = APP_DIR / 'cache'
 
 #: Logger object used by the application.
 logger = logging.getLogger(__name__)
+
+#: Flags given to the application's in the command line.
+flags = argparse.Namespace()

@@ -9,8 +9,9 @@ import pickle
 from hammock import Hammock
 import requests
 
-from gisht import CACHE_DIR
-from gisht.util import ensure_path
+from gisht import CACHE_DIR, flags, logger
+from gisht.args.data import GistCommand
+from gisht.util import ensure_path, error
 
 
 __all__ = ['get_gist_info', 'iter_gists']
@@ -179,17 +180,18 @@ class GitHub(CachedHammock):
         super(GitHub, self).__init__(self.API_URL, *args, **kwargs)
 
     def _on_cache_miss(self, path):
-        # TODO(xion): error out on -i/--info if -l/--local has been provided
-        pass
+        if flags.local:
+            error("can't access GitHub path /%s in --local mode", path)
 
     def on_cache_hit(self, path, content):
-        # TODO(xion): bypass the cache if -f/--fetch/--remote has been provided
-        pass
+        if flags.local is False:
+            return False  # bypass the cache
 
     def _on_cache_rescue(self, path, content):
-        # TODO(xion):show appropriate warning on stderr
-        # that data might be stale (on -i/--info)
-        pass
+        if flags.command == GistCommand.INFO:
+            logger.warning(
+                "could not communicate with GitHub -- "
+                "gist information may be out of date")
 
 
 # Utility functions

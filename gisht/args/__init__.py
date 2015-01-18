@@ -8,11 +8,13 @@ from gisht.args.parser import create_argv_parser
 __all__ = ['parse_argv']
 
 
-def parse_argv(argv):
+def parse_argv(argv, namespace=None):
     """Parse command line arguments.
 
     :param argv: List of command line argument strings,
                  *including* the program name in argv[0]
+    :param namespace: `argparse`\ 's :class:`Namespace` object
+                      to fill with parsed arguments
 
     :return: Parse result from :func:`argparse.ArgumentParser.parse_args`
     """
@@ -34,6 +36,6 @@ def parse_argv(argv):
         autocomplete.trigger(parser)
 
     # TODO(xion): support reading default parameter values from ~/.gishtrc
-    result = parser.parse_args(argv[1:])
+    result = parser.parse_args(argv[1:], namespace)
     result.gist_args = gist_args
     return result

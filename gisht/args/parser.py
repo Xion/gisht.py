@@ -59,8 +59,8 @@ def add_gist_group(parser):
     fetch_group.set_defaults(local=None)
     fetch_group.add_argument('-l', '--local', '--cached',
                              action='store_true', dest='local',
-                             help="only run the gist if it's available locally"
-                                  " (do not fetch it from GitHub)")
+                             help="operate only on gists available locally"
+                                  " (do not fetch anything from GitHub)")
     fetch_group.add_argument('-f', '--fetch', '--remote',
                              action='store_false', dest='local',
                              help="always fetch the gist from GitHub, "

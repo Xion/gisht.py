@@ -11,7 +11,7 @@ import sys
 
 import requests
 
-from gisht import APP_DIR, logger
+from gisht import APP_DIR, flags, logger
 from gisht.args import parse_argv
 from gisht.args.data import GistCommand
 from gisht.gists import (download_gist, gist_exists, update_gist,
@@ -26,7 +26,7 @@ def main(argv=sys.argv):
         print("only POSIX operating systems are supported", file=sys.stderr)
         return os.EX_UNAVAILABLE
 
-    args = parse_argv(argv)
+    args = parse_argv(argv, flags)
     setup_logging(args.log_level)
 
     # during the first run, display a warning about executing untrusted code
