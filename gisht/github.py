@@ -182,6 +182,10 @@ class GitHub(CachedHammock):
         # TODO(xion): error out on -i/--info if -l/--local has been provided
         pass
 
+    def on_cache_hit(self, path, content):
+        # TODO(xion): bypass the cache if -f/--fetch/--remote has been provided
+        pass
+
     def _on_cache_rescue(self, path, content):
         # TODO(xion):show appropriate warning on stderr
         # that data might be stale (on -i/--info)

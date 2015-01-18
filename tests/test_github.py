@@ -27,7 +27,7 @@ class _GitHubApi(TestCase):
         responses.mock.__enter__()
 
     @after
-    def deactive_responses(self):
+    def deactivate_responses(self):
         responses.mock.__exit__()
 
     def _stub_response(self, url, response_json, status=None):
