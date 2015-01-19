@@ -154,51 +154,55 @@ def download_gist(gist):
 
     owner, gist_name = gist.split('/', 1)
     for gist_json in iter_gists(owner):
-        gist_files = list(gist_json['files'].keys())
-        for filename in gist_files:
-            if filename != gist_name:
-                continue
+        # GitHub names gists after their first files in alphabetical order
+        # TODO(xion): warn the user when this could create problems,
+        # i.e. when a single owner has two separate gists named the same way
+        filename = list(sorted(gist_json['files'].keys()))[0]
+        if filename != gist_name:
+            continue
 
-            # the gist should be placed inside a directory named after its ID
-            clone_needed = True
-            gist_dir = GISTS_DIR / str(gist_json['id'])
-            if gist_dir.exists():
-                # this is an inconsistent state, as it means the binary
-                # for a gist is missing, while the repository is not;
-                # no real harm in that, but we should report it anyway
-                logger.warning("gist %s already downloaded")
-                clone_needed = False
+        # the gist should be placed inside a directory named after its ID
+        clone_needed = True
+        gist_dir = GISTS_DIR / str(gist_json['id'])
+        if gist_dir.exists():
+            # this is an inconsistent state, as it means the binary
+            # for a gist is missing, while the repository is not;
+            # no real harm in that, but we should report it anyway
+            logger.warning("gist %s already downloaded")
+            clone_needed = False
 
-            # clone it if necessary (which is usually the case)
-            if clone_needed:
-                logger.debug("gist %s found, cloning its repository...", gist)
-                ensure_path(gist_dir)
-                git_clone_run = run('git clone %s %s' % (
-                    gist_json['git_pull_url'], gist_dir))
-                if git_clone_run.status_code != 0:
-                    logger.warning(
-                        "cloning repository for gist %s failed (exitcode %s)",
-                        gist, git_clone_run.status_code)
-                    join(git_clone_run)
-                logger.debug("gist %s successfully cloned", gist)
+        # clone it if necessary (which is usually the case)
+        if clone_needed:
+            logger.debug("gist %s found, cloning its repository...", gist)
+            ensure_path(gist_dir)
+            git_clone_run = run('git clone %s %s' % (
+                gist_json['git_pull_url'], gist_dir))
+            if git_clone_run.status_code != 0:
+                logger.warning(
+                    "cloning repository for gist %s failed (exitcode %s)",
+                    gist, git_clone_run.status_code)
+                join(git_clone_run)
+            logger.debug("gist %s successfully cloned", gist)
 
-            # make sure the gist executable is, in fact, executable
-            # TODO(xion): fix the hashbang while we're at it
-            gist_exec = gist_dir / filename
-            gist_exec.chmod(int('755', 8))
-            logger.debug("gist file %s made executable", gist_exec)
+        # make sure the gist executable is, in fact, executable
+        # TODO(xion): fix the hashbang while we're at it
+        gist_exec = gist_dir / filename
+        gist_exec.chmod(int('755', 8))
+        logger.debug("gist file %s made executable", gist_exec)
 
-            # create symlink from BIN_DIR/<owner>/<gist_name>
-            # to the gist's executable file
-            gist_owner_bin_dir = BIN_DIR / owner
-            ensure_path(gist_owner_bin_dir)
-            gist_link = gist_owner_bin_dir / filename
+        # create symlink from BIN_DIR/<owner>/<gist_name>
+        # to the gist's executable file
+        gist_owner_bin_dir = BIN_DIR / owner
+        ensure_path(gist_owner_bin_dir)
+        gist_link = gist_owner_bin_dir / filename
+        if not gist_link.exists():
             gist_link.symlink_to(path_vector(from_=gist_link, to=gist_exec))
             logger.debug("symlinked gist 'binary' %s to executable %s",
                          gist_link, gist_exec)
 
+        if clone_needed:
             logger.info("gist %s downloaded sucessfully", gist)
-            return True
+        return True
 
     return False
 
@@ -214,6 +218,7 @@ def update_gist(gist):
     gist_dir = GISTS_DIR / gist_id
     git_pull_run = run('git pull', cwd=str(gist_dir))
     if git_pull_run.status_code != 0:
+        # TODO(xion): detect conflicts and do `git reset --merge` automatically
         logger.warning("pulling changes to gist %s failed (exitcode %s)",
                        gist, git_pull_run.status_code)
         join(git_pull_run)
