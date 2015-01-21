@@ -81,9 +81,8 @@ class GitHub(CachedHammock):
 
     def _on_cache_rescue(self, path, content):
         if flags.command == GistCommand.INFO:
-            logger.warning(
-                "could not communicate with GitHub -- "
-                "gist information may be out of date")
+            logger.warning("could not communicate with GitHub -- "
+                           "gist information may be out of date")
 
 
 # Utility functions

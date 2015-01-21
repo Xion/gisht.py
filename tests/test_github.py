@@ -10,6 +10,7 @@ from taipan.collections import dicts
 from taipan.strings import is_string
 from taipan.testing import before, after, TestCase
 
+from gisht import flags
 import gisht.github as __unit__
 
 
@@ -21,6 +22,10 @@ class _GitHubApi(TestCase):
         "message": "Not Found",
         "documentation_url": "https://developer.github.com/v3",
     }
+
+    @before
+    def set_flags(self):
+        flags.local = False
 
     @before
     def activate_responses(self):
