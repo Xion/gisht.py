@@ -31,6 +31,22 @@ Behind the scenes, *gisht* will fetch the gist, cache it locally, and run its co
 Magic!
 
 
+Usage
+~~~~~
+
+Supply the gist as *<owner>/<name>*, just like you see it on its GitHub page::
+
+    gisht Octocat/foo
+
+Any arguments after `--` will be passed to the gist executable::
+
+    gisht Octocat/greet -- "Hello world" --cheerful
+
+For more options, type::
+
+    gisht --help
+
+
 Installation
 ~~~~~~~~~~~~
 
@@ -66,27 +82,13 @@ etc.::
 The automatic installation script essentially does all of the above.
 
 
-Usage
-~~~~~
+Contributing
+~~~~~~~~~~~~
 
-Supply the gist in the *<owner>/<name>* format, as you can see it on its GitHub page::
+Contributions welcome!
 
-    gisht Octocat/foo
-
-Any arguments after `--` will be passed to the gist executable::
-
-    gisht Octocat/greet -- "Hello world" --cheerful
-
-For more options, type::
-
-    gisht --help
-
-
-Notes
-~~~~~
-
-Right now, this project is in early stages. `ROADMAP.rst` file contains some ideas
-on where it could be headed in the near and/or further future.
+`ROADMAP.rst` file contains some ideas for direction(s) the project
+may head in the future
 
 If you want to help, your best bet is to look for all the numerous ``TODO``\ s
 scattered about the code case, and try to bring their number down :)
@@ -95,5 +97,3 @@ This should get you started on the development::
 
     pip install -r requirements-dev.txt
     tox
-
-Contributions welcome!
