@@ -56,10 +56,6 @@ class _GitHubApi(TestCase):
 class GetGistInfo(_GitHubApi):
     GIST_ID = '42'
 
-    def test_none(self):
-        with self.assertRaises(TypeError):
-            __unit__.get_gist_info(None)
-
     def test_gist_not_found(self):
         self._stub_gist_response(
             self.GIST_ID, self.NOT_FOUND_RESPONSE, status=404)
