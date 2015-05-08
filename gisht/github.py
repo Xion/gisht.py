@@ -17,12 +17,13 @@ __all__ = ['get_gist_info', 'iter_gists']
 def get_gist_info(gist_id):
     """Retrieve information about gist of given ID.
 
-    :param gist_id: Numerical ID of a GitHub gist
+    :param gist_id: ID of a GitHub gist
                     (NOT the user-visible <owner>/<name> string!)
 
     :return: Dictionary with gist information
     :raises: :class:`requests.exception.HTTPError`
     """
+    gist_id = str(gist_id)
     if '/' in gist_id:
         raise ValueError("expected gist ID, not the <owner>/<name> reference!")
 

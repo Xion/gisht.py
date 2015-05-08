@@ -187,8 +187,9 @@ def download_gist(gist):
         # make sure the gist executable is, in fact, executable
         # TODO(xion): fix the hashbang while we're at it
         gist_exec = gist_dir / filename
-        gist_exec.chmod(int('755', 8))
-        logger.debug("gist file %s made executable", gist_exec)
+        if not (gist_exec.stat().st_mode & GIST_EXEC_PERMISSIONS):
+            gist_exec.chmod(GIST_EXEC_PERMISSIONS)
+            logger.debug("gist file %s made executable", gist_exec)
 
         # create symlink from BIN_DIR/<owner>/<gist_name>
         # to the gist's executable file
@@ -205,6 +206,9 @@ def download_gist(gist):
         return True
 
     return False
+
+#: Permission bits we set on the gist executable.
+GIST_EXEC_PERMISSIONS = int('755', 8)
 
 
 def update_gist(gist):
