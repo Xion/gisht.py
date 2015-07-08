@@ -19,15 +19,10 @@ Improved gist management
 * Aliasing => anonymous gist support
 * Gist removal? (from cache/bin)
 
-Execution on steroids
-~~~~~~~~~~~~~~~~~~~~~
-
-* Detecting interpreter from file extension
-* Or even from syntax
-
 Crazy things
 ------------
 
+* Detect interpreter from file syntax
 * Parse import / require / etc. statements to figure out dependencies
   and download them, installing within virtualenv / rvm / etc. for the gist
 * Compile and run C / C++ / Java if the code has main() function / method
@@ -48,4 +43,5 @@ Distribution
 Project health
 ~~~~~~~~~~~~~~
 
+* More tests
 * Move development off `master` branch into named feature branches
