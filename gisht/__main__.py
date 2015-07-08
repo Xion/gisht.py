@@ -82,7 +82,7 @@ def main(argv=sys.argv):
 
 def setup_logging(level):
     """Sets up the application-wide logging system to output everything to
-    standard output, and filter our own messages according to given
+    standard error stream, and filter our own messages according to given
     minimum level.
     """
     logger.setLevel(level)
@@ -111,7 +111,10 @@ def display_warning():
         sep=os.linesep, file=sys.stderr)
 
     print("Do you want to continue? [y/N]: ", end="", file=sys.stderr)
-    answer = raw_input()
+    try:
+        answer = raw_input()
+    except NameError:
+        answer = input()  # Python 3
     return answer.lower().strip() == 'y'
 
 
