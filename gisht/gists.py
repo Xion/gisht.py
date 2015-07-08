@@ -6,6 +6,8 @@ from __future__ import print_function, unicode_literals
 from collections import OrderedDict
 import os
 from pathlib import Path
+from pipes import quote as shell_quote
+from shlex import split as shell_split
 import sys
 import webbrowser
 
@@ -25,6 +27,20 @@ __all__ = [
 ]
 
 
+#: Mapping of common interpreters from file extensions they can handle.
+#:
+#: Interpreters are defined as shell commands with placeholders for gist
+#: script name and its arguments.
+COMMON_INTERPRETERS = {
+    '.hs': 'runhaskell %(script)s %(args)s',
+    '.js': 'node -e %(script)s %(args)s',
+    '.pl': 'perl -- %(script)s %(args)s',
+    '.py': 'python %(script)s - %(args)s',
+    '.rb': 'irb -- %(script)s %(args)s',
+    '.sh': 'sh -- %(script)s %(args)s',
+}
+
+
 def run_gist(gist, args=()):
     """Run the gist specified by owner/name string.
 
@@ -35,16 +51,34 @@ def run_gist(gist, args=()):
     """
     logger.info("running gist %s ...", gist)
 
-    cmd = bytes(BIN_DIR / gist)
+    executable = bytes(BIN_DIR / gist)
     try:
-        os.execv(cmd, [cmd] + list(args))
+        os.execv(executable, [executable] + list(args))
     except OSError as e:
-        if e.errno == 8:  # Exec format error
-            # TODO(xion): deduce correct interpreter based on extension
-            # of the symlinks target or the MIME type from GitHub
-            error("can't run gist %s -- does it have a proper hashbang?", gist)
-        else:
+        if e.errno != 8:  # Exec format error
             raise
+
+        logger.warning("couldn't run gist %s directly -- "
+                       "does it have a proper hashbang?", gist)
+
+        # try to figure out the interpreter to use based on file extension
+        # contained within the gist name
+        extension = Path(gist).suffix
+        if not extension:
+            # TODO(xion): use MIME type from GitHub as additional hint
+            # as to the choice of interpreter
+            error("can't deduce interpreter for gist %s "
+                  "without file extension", gist)
+        interpreter = COMMON_INTERPRETERS.get(extension)
+        if not interpreter:
+            error("no interpreter found for extension '%s'", extension)
+
+        # format an interpreter-specific command line
+        # and execute it within current process (hence the argv shenanigans)
+        cmd = interpreter % dict(script=str(BIN_DIR / gist),
+                                 args=' '.join(map(shell_quote, args)))
+        cmd_argv = shell_split(cmd)
+        os.execvp(cmd_argv[0], cmd_argv)
 
 
 def output_gist_binary_path(gist):
@@ -178,7 +212,7 @@ def download_gist(gist):
             git_clone_run = run('git clone %s %s' % (
                 gist_json['git_pull_url'], gist_dir))
             if git_clone_run.status_code != 0:
-                logger.warning(
+                logger.error(
                     "cloning repository for gist %s failed (exitcode %s)",
                     gist, git_clone_run.status_code)
                 join(git_clone_run)
