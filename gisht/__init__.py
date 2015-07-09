@@ -24,12 +24,14 @@ APP_DIR = Path(os.path.expanduser('~/.gisht'))
 GISTS_DIR = APP_DIR / 'gists'
 
 #: Directory where links to gist "binaries" are stored.
+#:
 #: Subdirectories have names corresponding to GitHub user handles
 #: and contain symbolic links to executable files inside gist repos.
 BIN_DIR = APP_DIR / 'bin'
 
 #: Directory where the request cache resides.
-#: Subdirectories contiain pickled :class:`Response` objects
+#:
+#: Subdirectories contain pickled :class:`Response` objects
 #: (from :module:`requests`) inside directory paths corresponding to URL paths.
 CACHE_DIR = APP_DIR / 'cache'
 
@@ -37,5 +39,5 @@ CACHE_DIR = APP_DIR / 'cache'
 #: Logger object used by the application.
 logger = logging.getLogger(__name__)
 
-#: Flags given to the application's in the command line.
+#: Flags given to the application in the command line.
 flags = argparse.Namespace()

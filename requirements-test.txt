@@ -1,5 +1,6 @@
 # Test-only dependencies
 
+mock
 pytest
 pytest-cov
 responses
