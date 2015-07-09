@@ -9,10 +9,10 @@ gisht
 .. |Version| image:: https://img.shields.io/pypi/v/gisht.svg?style=flat
     :target: https://pypi.python.org/pypi/gisht
     :alt: Version
-.. |Development Status| image:: https://pypip.in/status/gisht/badge.svg?style=flat
+.. |Development Status| image:: https://img.shields.io/pypi/status/gisht.svg?style=flat
     :target: https://pypi.python.org/pypi/gisht/
     :alt: Development Status
-.. |Python Versions| image:: https://pypip.in/py_versions/gisht/badge.svg?style=flat
+.. |Python Versions| image:: https://img.shields.io/pypi/pyversions/gisht.svg?style=flat
     :target: https://pypi.python.org/pypi/gisht
     :alt: Python versions
 .. |License| image:: https://img.shields.io/pypi/l/gisht.svg?style=flat
