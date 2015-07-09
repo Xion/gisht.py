@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 from pipes import quote as shell_quote
 from shlex import split as shell_split
+import stat
 import sys
 import webbrowser
 
@@ -221,9 +222,8 @@ def download_gist(gist):
         # make sure the gist executable is, in fact, executable
         # TODO(xion): fix the hashbang while we're at it
         gist_exec = gist_dir / filename
-        if not (gist_exec.stat().st_mode & GIST_EXEC_PERMISSIONS):
-            gist_exec.chmod(GIST_EXEC_PERMISSIONS)
-            logger.debug("gist file %s made executable", gist_exec)
+        gist_exec.chmod(GIST_EXEC_PERMISSIONS)
+        logger.debug("adjusted permissions for gist file %s", gist_exec)
 
         # create symlink from BIN_DIR/<owner>/<gist_name>
         # to the gist's executable file
@@ -242,7 +242,11 @@ def download_gist(gist):
     return False
 
 #: Permission bits we set on the gist executable.
-GIST_EXEC_PERMISSIONS = int('755', 8)
+GIST_EXEC_PERMISSIONS = (
+    stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH |
+    stat.S_IWUSR |
+    stat.S_IXUSR | stat.S_IXGRP
+)
 
 
 def update_gist(gist):
