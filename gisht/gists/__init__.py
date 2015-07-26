@@ -17,7 +17,7 @@ from tabulate import tabulate
 
 from gisht import BIN_DIR, GISTS_DIR, logger
 from gisht.github import get_gist_info, iter_gists
-from gisht.util import ensure_path, error, fatal
+from gisht.util import ensure_path, error, fatal, join, path_vector, run
 
 
 __all__ = [
@@ -267,49 +267,3 @@ def update_gist(gist):
     logger.info("gist %s successfully updated", gist)
 
     return True
-
-
-# Utility functions
-
-def run(cmd, *args, **kwargs):
-    """Wrapper around ``envoy.run`` that ensures the passed command string
-    is NOT Unicode string, but a plain buffer of bytes.
-
-    This is necessary to fix some Envoy's command parsing malfeasances.
-    """
-    return envoy.run(bytes(cmd), *args, **kwargs)
-
-
-def join(process):
-    """Join the process, i.e. pipe its output to our own standard stream
-    and relay its exit code back to the system.
-
-    :param process: envoy's process result object
-    """
-    sys.stdout.write(process.std_out)
-    sys.stderr.write(process.std_err)
-    raise SystemExit(process.status_code)
-
-
-def path_vector(from_, to):
-    """Return a 'path vector' from given path to the other, i.e.
-    the argument of ``cd`` that'd take the user from the source
-    directly to target.
-    """
-    from_, to = map(Path, (from_, to))
-
-    # TODO(xion): consider using http://stackoverflow.com/a/21499676/434799
-    # instead of standard os.commonprefix (we don't run into the edge case
-    # of the latter yet)
-    common_prefix = os.path.commonprefix(list(map(str, (from_, to))))
-
-    # compute the number of '..' segments that are necessary to go
-    # from source up to the common prefix
-    prefix_wrt_source = Path(from_).relative_to(common_prefix)
-    pardir_count = len(prefix_wrt_source.parts)
-    if not from_.is_dir():
-        pardir_count -= 1
-
-    # join those '..' segments with relative path from common prefix to target
-    target_wrt_prefix = Path(to).relative_to(common_prefix)
-    return Path(*([os.path.pardir] * pardir_count)) / target_wrt_prefix
