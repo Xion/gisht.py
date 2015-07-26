@@ -1,5 +1,5 @@
 """
-Module containing gist operations' code.
+Package containing gist operations' code.
 """
 from __future__ import print_function, unicode_literals
 
