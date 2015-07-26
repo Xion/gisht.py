@@ -42,10 +42,12 @@ Any arguments after `--` will be passed to the gist executable::
 
     gisht Octocat/greet -- "Hello world" --cheerful
 
-If the gist doesn't have proper shebang (e.g. `#!/usr/bin/python`),
-use `-w` (`--which`) option and call the interpreter explicitly::
+If the gist doesn't have a proper shebang (e.g. `#!/usr/bin/python`),
+gisht will look at any file extensions and try to deduce how to run the gist.
 
-    $ python `gisht -w Octocat/badgist.py`
+You can also use `-w` (`--which`) option and call the interpreter explicitly::
+
+    $ python `gisht -w Octocat/badgist`
 
 For more options, type::
 
