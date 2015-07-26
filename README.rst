@@ -90,15 +90,10 @@ The automatic installation script essentially does all of the above.
 Contributing
 ~~~~~~~~~~~~
 
-Contributions welcome!
+Contributions are obviously very welcome! For some ideas, just head to
+the issue tracker.
 
-`ROADMAP.rst` file contains some ideas for direction(s) the project
-may head in the future
-
-If you want to help, your best bet is to look for all the numerous ``TODO``\ s
-scattered about the code case, and try to bring their number down :)
-
-This should get you started on the development::
+This should get you started on the actual development::
 
     pip install -r requirements-dev.txt
     tox
