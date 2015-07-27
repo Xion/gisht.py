@@ -31,69 +31,53 @@ Behind the scenes, *gisht* will fetch the gist, cache it locally, and run its co
 Magic!
 
 
+Installation
+~~~~~~~~~~~~
+
+Install *gisht*  using *pip*, the Python package manager::
+
+    pip install gisht
+
+Depending on how the Python interpreter is configured on your system,
+you may need to use ``sudo`` to install *gisht* globally.
+(Or use ``virtualenv``).
+
+For TAB completion of gist names, add the following to your ``~/.bashrc``::
+
+    eval $(register-python-autocomplete gisht)
+
+or ``~/.zshrc``::
+
+    autoload bashcompinit
+    bashcompinit
+    eval $(register-python-autocomplete gisht)
+
+
 Usage
 ~~~~~
 
-Supply the gist as *<owner>/<name>*, just like you see it on its GitHub page::
-
-    gisht Octocat/foo
-
-Any arguments after `--` will be passed to the gist executable::
+If you want to pass arguments, put them after ``--`` (two dashes)::
 
     gisht Octocat/greet -- "Hello world" --cheerful
 
-If the gist doesn't have a proper shebang (e.g. `#!/usr/bin/python`),
-gisht will look at any file extensions and try to deduce how to run the gist.
+If the gist doesn't have a proper shebang (e.g. ``#!/usr/bin/python``),
+*gisht* will look at any file extensions and try to deduce how to run the gist.
 
-You can also use `-w` (`--which`) option and call the interpreter explicitly::
+You can also use ``-w`` (``--which``) option
+and call the interpreter explicitly::
 
-    $ python `gisht -w Octocat/badgist`
+    python `gisht -w Octocat/badgist`
 
 For more options, type::
 
     gisht --help
 
 
-Installation
-~~~~~~~~~~~~
-
-Automatic
----------
-
-You can use the ``install.sh`` script to install *gisht* automatically::
-
-    curl -L https://github.com/Xion/gisht/raw/master/install.sh | sh
-
-It will place *gisht* in ``/usr/local`` directory and expose ``gisht`` command
-to all users in the system (assuming ``/usr/local/bin`` is in their ``$PATH``).
-
-Manual
-------
-
-Alternatively, you can install *gisht*  manually using PIP::
-
-    pip install gisht
-
-To follow Python's best practices, it's recommended that you place *gisht*
-in its own virtualenv -- for example::
-
-    virtualenv /usr/local/gisht
-    source /usr/local/gisht/bin/activate
-    pip install gisht
-
-For convenience, you can then alias it inside your ``~/.bash_aliases``, ``~/.zshrc``,
-etc.::
-
-    alias gisht='/usr/local/gisht/bin/gisht'
-
-The automatic installation script essentially does all of the above.
-
-
 Contributing
 ~~~~~~~~~~~~
 
-Contributions are obviously very welcome! For some ideas, just head to
-the issue tracker.
+Contributions are of course very welcome!
+If you need some ideas, just head to the issue tracker.
 
 This should get you started on the actual development::
 
