@@ -2,6 +2,7 @@
 
 argcomplete
 envoy
+furl
 hammock
 requests>=1.0
 tabulate

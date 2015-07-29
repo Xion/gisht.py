@@ -6,7 +6,12 @@ from pathlib import Path
 from pipes import quote as shell_quote
 from shlex import split as shell_split
 
+from furl import furl
+import requests
+
 from gisht import BIN_DIR, logger
+from gisht.gists.cache import ensure_gist
+from gisht.github import get_gist_info
 from gisht.util import error
 
 
@@ -27,7 +32,57 @@ COMMON_INTERPRETERS = {
 }
 
 
-def run_gist(gist, args=()):
+def run_gist(gist, args=(), local=False):
+    """Run the specified gist."""
+    gist = furl(gist)
+    if gist.host:
+        return run_gist_url(gist, args, local=local)
+    else:
+        gist = str(gist.path)
+        return run_named_gist(gist, args)
+
+
+def run_gist_url(gist, args=(), local=False):
+    """Run the gist specified by an URL.
+
+    If successful, this function does not return.
+
+    :param gist: Gist URL as furl object
+    :param args: Arguments to pass to the gist
+    :param local: Whether to only run gists that are available locally
+    """
+    if gist.host != GITHUB_GISTS_HOST:
+        error("unrecognized gist URL domain: %s", gist.host)
+
+    try:
+        owner, gist_id = gist.path.segments
+    except ValueError:
+        error("invalid format GitHub gist URL")
+
+    try:
+        gist_info = get_gist_info(gist_id)
+    except requests.exceptions.HTTPError:
+        error("couldn't retrieve GitHub gist %s/%s", owner, gist_id)
+
+    # warn if the actual gist owner is different than the one in the URL;
+    # TODO(xion): consider asking for confirmation;
+    # there may be some phishing scenarios possible here
+    fetched_owner = gist_info.get('owner', {}).get('login')
+    if owner != fetched_owner:
+        logger.warning("gist %s is owned by %s, not %s",
+                        gist_id, fetched_owner, owner)
+
+    gist_name = list(sorted(gist_info['files'].keys()))[0]
+    actual_gist = '/'.join((fetched_owner, gist_name))
+
+    ensure_gist(actual_gist, local=local)
+    return run_named_gist(actual_gist, args)
+
+#: Host part of the GitHub gists' URLs.
+GITHUB_GISTS_HOST = 'gist.github.com'
+
+
+def run_named_gist(gist, args=()):
     """Run the gist specified by owner/name string.
 
     This function does not return, because the whole process

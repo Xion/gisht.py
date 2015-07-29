@@ -5,6 +5,8 @@ import argparse
 from itertools import chain
 import logging
 
+from furl import furl
+
 from gisht import __version__
 from gisht.args.autocomplete import gist_completer
 from gisht.args.data import GistCommand
@@ -71,6 +73,12 @@ def add_gist_group(parser):
 
 def gist(value):
     """Converter/validator for the GIST command line argument."""
+    # TODO(xion): create a "value type" for gist identifier
+    # (which can be owner/name or full URL) so that we don't have to repeat
+    # the logic here, in __main__, and in .gists.run
+    if furl(value).host:
+        return value
+
     try:
         owner, gist_name = value.split('/')
     except ValueError:

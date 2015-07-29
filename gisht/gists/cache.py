@@ -1,16 +1,20 @@
 """
 Functions for downloading gists and caching them locally.
 """
+import os
 import stat
+
+import requests
 
 from gisht import BIN_DIR, GISTS_DIR, logger
 from gisht.github import iter_gists
-from gisht.util import ensure_path, fatal, join, run
+from gisht.util import ensure_path, error, fatal, join, run
 
 
+# TODO(xion): clean the list up, we don't need to export so much anymore
 __all__ = [
     'gist_exists', 'get_gist_id',
-    'download_gist', 'update_gist',
+    'ensure_gist', 'download_gist', 'update_gist',
 ]
 
 
@@ -30,6 +34,35 @@ def get_gist_id(gist):
     logger.debug("gist %s found to have ID=%s", gist, gist_id)
 
     return gist_id
+
+
+def ensure_gist(gist, local=False):
+    """Ensure that given gist is downloaded & cached.
+
+    :param gist: Gist as owner/name string
+
+    This, of course, may mean downloading the gist if it hasn't been before,
+    or doing nothing if it has.
+    """
+    if gist_exists(gist):
+        logger.debug("gist %s found among already downloaded gists", gist)
+        if local is False:
+            # take the opportunity to update the gist to latest revision
+            if not update_gist(gist):
+                error("failed to update gist %s")
+    else:
+        if local:
+            error("gist %s is not available locally", gist,
+                  exitcode=os.EX_NOINPUT)
+        try:
+            if not download_gist(gist):
+                error("gist %s not found", gist, exitcode=os.EX_DATAERR)
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 404:
+                error("user '%s' not found", gist.split('/')[0],
+                      exitcode=os.EX_UNAVAILABLE)
+            else:
+                error("HTTP error: %s", e, exitcode=os.EX_UNAVAILABLE)
 
 
 def download_gist(gist):

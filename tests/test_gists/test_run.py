@@ -10,6 +10,9 @@ from gisht import BIN_DIR
 import gisht.gists.run as __unit__
 
 
+# TODO(xion): write tests for running gists by URL
+
+
 EXTENSION = '.huh'
 INTERPRETER = 'wat'
 INTERPRETER_ARGV = INTERPRETER + ' %(script)s -- %(args)s'

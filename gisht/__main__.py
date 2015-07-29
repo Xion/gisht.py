@@ -9,12 +9,13 @@ import logging
 import os
 import sys
 
+from furl import furl
 import requests
 
 from gisht import APP_DIR, flags, logger
 from gisht.args import parse_argv
 from gisht.args.data import GistCommand
-from gisht.gists import (download_gist, gist_exists, update_gist,
+from gisht.gists import (ensure_gist,
                          open_gist_page, output_gist_binary_path,
                          print_gist, run_gist, show_gist_info)
 from gisht.util import error
@@ -40,30 +41,13 @@ def main(argv=sys.argv):
     gist = args.gist
     gist_args = args.gist_args
 
-    # download it from GitHub, if the gist hasn't been cached locally,
-    # or update it to latest revision if user requested that
-    if gist_exists(gist):
-        logger.debug("gist %s found among already downloaded gists", gist)
-        if args.local is False:
-            if not update_gist(gist):
-                error("failed to update gist %s")
-    else:
-        if args.local:
-            error("gist %s is not available locally", gist,
-                  exitcode=os.EX_NOINPUT)
-        try:
-            if not download_gist(gist):
-                error("gist %s not found", gist, exitcode=os.EX_DATAERR)
-        except requests.exceptions.HTTPError as e:
-            if e.response.status_code == 404:
-                error("user '%s' not found", gist.split('/')[0],
-                      exitcode=os.EX_UNAVAILABLE)
-            else:
-                error("HTTP error: %s", e, exitcode=os.EX_UNAVAILABLE)
+    # TODO(xion): only do that for RUN, PRINT & WHICH
+    if not furl(gist).host:
+        ensure_gist(gist, local=args.local)
 
     # do with the gist what the user has requested (default: run it)
     if args.command == GistCommand.RUN:
-        run_gist(gist, gist_args)
+        run_gist(gist, gist_args, local=args.local)
     elif args.command not in GistCommand:
         error("unknown gist action %r", args.command, exitcode=os.EX_USAGE)
     else:
