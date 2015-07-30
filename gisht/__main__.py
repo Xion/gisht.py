@@ -10,7 +10,6 @@ import os
 import sys
 
 from furl import furl
-import requests
 
 from gisht import APP_DIR, flags, logger
 from gisht.args import parse_argv

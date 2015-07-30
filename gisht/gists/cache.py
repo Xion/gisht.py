@@ -8,7 +8,7 @@ import requests
 
 from gisht import BIN_DIR, GISTS_DIR, logger
 from gisht.github import iter_gists
-from gisht.util import ensure_path, error, fatal, join, run
+from gisht.util import ensure_path, error, fatal, join, path_vector, run
 
 
 # TODO(xion): clean the list up, we don't need to export so much anymore

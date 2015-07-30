@@ -51,7 +51,7 @@ class RunGistUrl(TestCase):
     @mock.patch.object(__unit__, 'get_gist_info')
     def test_success__no_args(self, mock_get_gist_info, mock_run_named_gist):
         mock_get_gist_info.return_value = {
-            'owner' : {'login': OWNER},
+            'owner': {'login': OWNER},
             'files': {NAME: '__unused__'},
         }
 
@@ -64,7 +64,7 @@ class RunGistUrl(TestCase):
     @mock.patch.object(__unit__, 'get_gist_info')
     def test_success__with_args(self, mock_get_gist_info, mock_run_named_gist):
         mock_get_gist_info.return_value = {
-            'owner' : {'login': OWNER},
+            'owner': {'login': OWNER},
             'files': {NAME: '__unused__'},
         }
 

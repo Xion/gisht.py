@@ -70,7 +70,7 @@ def run_gist_url(gist, args=(), local=False):
     fetched_owner = gist_info.get('owner', {}).get('login')
     if owner != fetched_owner:
         logger.warning("gist %s is owned by %s, not %s",
-                        gist_id, fetched_owner, owner)
+                       gist_id, fetched_owner, owner)
 
     gist_name = list(sorted(gist_info['files'].keys()))[0]
     actual_gist = '/'.join((fetched_owner, gist_name))
