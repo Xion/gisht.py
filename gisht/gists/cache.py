@@ -11,29 +11,7 @@ from gisht.github import iter_gists
 from gisht.util import ensure_path, error, fatal, join, path_vector, run
 
 
-# TODO(xion): clean the list up, we don't need to export so much anymore
-__all__ = [
-    'gist_exists', 'get_gist_id',
-    'ensure_gist', 'download_gist', 'update_gist',
-]
-
-
-def gist_exists(gist):
-    """Checks if the gist specified by owner/name string exists."""
-    gist_exec_symlink = BIN_DIR / gist
-    return gist_exec_symlink.exists()  # also checks if symlink is not broken
-
-
-def get_gist_id(gist):
-    """Convert the gist specified by owner/name to gist ID."""
-    if not gist_exists(gist):
-        fatal("unknown gist %s")
-
-    gist_exec = (BIN_DIR / gist).resolve()
-    gist_id = gist_exec.parent.name
-    logger.debug("gist %s found to have ID=%s", gist, gist_id)
-
-    return gist_id
+__all__ = ['ensure_gist', 'get_gist_id']
 
 
 def ensure_gist(gist, local=False):
@@ -63,6 +41,24 @@ def ensure_gist(gist, local=False):
                       exitcode=os.EX_UNAVAILABLE)
             else:
                 error("HTTP error: %s", e, exitcode=os.EX_UNAVAILABLE)
+
+
+def get_gist_id(gist):
+    """Convert the gist specified by owner/name to gist ID."""
+    if not gist_exists(gist):
+        fatal("unknown gist %s")
+
+    gist_exec = (BIN_DIR / gist).resolve()
+    gist_id = gist_exec.parent.name
+    logger.debug("gist %s found to have ID=%s", gist, gist_id)
+
+    return gist_id
+
+
+def gist_exists(gist):
+    """Checks if the gist specified by owner/name string exists."""
+    gist_exec_symlink = BIN_DIR / gist
+    return gist_exec_symlink.exists()  # also checks if symlink is not broken
 
 
 def download_gist(gist):
