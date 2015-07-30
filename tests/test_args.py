@@ -2,18 +2,13 @@
 Tests for command-line handling code.
 """
 import argparse
-from contextlib import contextmanager
-try:
-    from StringIO import StringIO  # Python 2.x
-except ImportError:
-    from io import StringIO  # Python 3.x
-import sys
 
-from taipan.testing import before, expectedFailure, TestCase
+from taipan.testing import before, expectedFailure
 
 import gisht.args as __unit__
 from gisht.args.data import GistCommand
 from gisht.args.parser import LogLevelAction
+from tests import TestCase
 
 
 class ParseArgv(TestCase):
@@ -24,14 +19,14 @@ class ParseArgv(TestCase):
     DEFAULT_LOG_LEVEL = LogLevelAction.DEFAULT_LEVEL
 
     def test_empty(self):
-        with self._assertExit(2) as r:
+        with self.assertExit(2) as r:
             self._invoke()
         self.assertEmpty(r.stdout)
         self.assertIn("usage", r.stderr)
 
     def test_help(self):
         for flag in ('-h', '--help'):
-            with self._assertExit(0) as r:
+            with self.assertExit(0) as r:
                 self._invoke(flag)
 
             self.assertEmpty(r.stderr)  # expecting help output on stdout
@@ -45,7 +40,7 @@ class ParseArgv(TestCase):
     def test_gist__invalid__no_slash(self):
         invalid_gist = self.GIST.replace('/', '')
 
-        with self._assertExit(2) as r:
+        with self.assertExit(2) as r:
             self._invoke(invalid_gist)
 
         self.assertIn("usage", r.stderr)
@@ -54,7 +49,7 @@ class ParseArgv(TestCase):
     def test_gist__invalid__trailing_slash(self):
         invalid_gist = self.GIST[:self.GIST.find('/') + 1]
 
-        with self._assertExit(2) as r:
+        with self.assertExit(2) as r:
             self._invoke(invalid_gist)
 
         self.assertIn("usage", r.stderr)
@@ -81,14 +76,14 @@ class ParseArgv(TestCase):
         # supplying the same action flag multiple times makes no sense
         # and should be illegal. Unfortunately, there is no way to tell that
         # to the ArgumentParser :-(
-        with self._assertExit(2) as r:
+        with self.assertExit(2) as r:
             self._invoke('-r', '-r', self.GIST)
 
         self.assertIn("usage", r.stderr)
         self.assertIn('-r', r.stderr)
 
     def test_action__multiple__distinct(self):
-        with self._assertExit(2) as r:
+        with self.assertExit(2) as r:
             self._invoke('-r', '-p', self.GIST)
 
         self.assertIn("usage", r.stderr)
@@ -107,31 +102,6 @@ class ParseArgv(TestCase):
 
     def _invoke(self, *args):
         return __unit__.parse_argv([self.PROG] + list(args))
-
-    @contextmanager
-    def _assertExit(self, code=None):
-        """Assert that application would exit after executing given code."""
-        # run the code, capturing stdout and stderr
-        try:
-            sys.stdout = stdout = StringIO()
-            sys.stderr = stderr = StringIO()
-            with self.assertRaises(SystemExit) as r:
-                yield r
-        finally:
-            sys.stdout = sys.__stdout__
-            sys.stderr = sys.__stderr__
-
-        # assert on exit ocode
-        if code is not None:
-            if code is True:
-                code = 0
-            elif code is False:
-                code = -1
-            self.assertEquals(code, r.exception.code)
-
-        # store the content of standard streams for possible further assertion
-        r.stdout = stdout.getvalue()
-        r.stderr = stderr.getvalue()
 
 
 class CreateArgvParser(TestCase):
