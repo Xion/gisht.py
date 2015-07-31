@@ -40,9 +40,13 @@ def main(argv=sys.argv):
     gist = args.gist
     gist_args = args.gist_args
 
-    # TODO(xion): only do that for RUN, PRINT & WHICH
-    if not furl(gist).host:
-        ensure_gist(gist, local=args.local)
+    # if we are to do something that requires cloned gist,
+    # make sure it exists
+    if args.command in (GistCommand.RUN,
+                        GistCommand.PRINT,
+                        GistCommand.WHICH):
+        if not furl(gist).host:
+            ensure_gist(gist, local=args.local)
 
     # do with the gist what the user has requested (default: run it)
     if args.command == GistCommand.RUN:
