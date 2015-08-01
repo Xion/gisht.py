@@ -23,6 +23,21 @@ GIST = '%s/%s' % (OWNER, NAME)
 ARGS = ('a', 'bc')
 
 
+class RunGist(TestCase):
+    URL = 'http://example.com/' + GIST
+
+    @mock.patch.object(__unit__, 'run_gist_url')
+    def test_url(self, mock_run_gist_url):
+        __unit__.run_gist(self.URL)
+        mock_run_gist_url.assert_called_once_with(
+            furl(self.URL), (), local=False)
+
+    @mock.patch.object(__unit__, 'run_named_gist')
+    def test_name(self, mock_run_named_gist):
+        __unit__.run_gist(GIST)
+        mock_run_named_gist.assert_called_once_with(GIST, ())
+
+
 @mock.patch.object(__unit__, 'ensure_gist', new=mock.Mock())
 class RunGistUrl(TestCase):
     GIST_ID = '1a2s3d4f5g6h7j8k9l'

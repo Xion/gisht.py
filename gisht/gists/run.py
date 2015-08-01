@@ -18,28 +18,16 @@ from gisht.util import error
 __all__ = ['run_gist']
 
 
-#: Mapping of common interpreters from file extensions they can handle.
-#:
-#: Interpreters are defined as shell commands with placeholders for gist
-#: script name and its arguments.
-COMMON_INTERPRETERS = {
-    '.hs': 'runhaskell %(script)s %(args)s',
-    '.js': 'node -e %(script)s %(args)s',
-    '.pl': 'perl -- %(script)s %(args)s',
-    '.py': 'python %(script)s - %(args)s',
-    '.rb': 'irb -- %(script)s %(args)s',
-    '.sh': 'sh -- %(script)s %(args)s',
-}
-
-
 def run_gist(gist, args=(), local=False):
     """Run the specified gist."""
     gist = furl(gist)
     if gist.host:
         return run_gist_url(gist, args, local=local)
-    else:
+    elif gist.path:
         gist = str(gist.path)
         return run_named_gist(gist, args)
+    else:
+        raise ValueError("unrecognized gist format: %r" % str(gist))
 
 
 def run_gist_url(gist, args=(), local=False):
@@ -120,3 +108,17 @@ def run_named_gist(gist, args=()):
                                  args=' '.join(map(shell_quote, args)))
         cmd_argv = shell_split(cmd)
         os.execvp(cmd_argv[0], cmd_argv)
+
+
+#: Mapping of common interpreters from file extensions they can handle.
+#:
+#: Interpreters are defined as shell commands with placeholders for gist
+#: script name and its arguments.
+COMMON_INTERPRETERS = {
+    '.hs': 'runhaskell %(script)s %(args)s',
+    '.js': 'node -e %(script)s %(args)s',
+    '.pl': 'perl -- %(script)s %(args)s',
+    '.py': 'python %(script)s - %(args)s',
+    '.rb': 'irb -- %(script)s %(args)s',
+    '.sh': 'sh -- %(script)s %(args)s',
+}
