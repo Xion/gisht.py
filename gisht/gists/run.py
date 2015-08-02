@@ -20,14 +20,14 @@ __all__ = ['run_gist']
 
 def run_gist(gist, args=(), local=False):
     """Run the specified gist."""
-    gist = furl(gist)
-    if gist.host:
-        return run_gist_url(gist, args, local=local)
-    elif gist.path:
-        gist = str(gist.path)
+    url = furl(gist)
+    if url.host:
+        return run_gist_url(url, args, local=local)
+    elif '/' in gist:
+        gist = str(url.path)
         return run_named_gist(gist, args)
     else:
-        raise ValueError("unrecognized gist format: %r" % str(gist))
+        raise ValueError("unrecognized gist format: %r" % gist)
 
 
 def run_gist_url(gist, args=(), local=False):

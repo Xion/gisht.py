@@ -25,6 +25,7 @@ ARGS = ('a', 'bc')
 
 class RunGist(TestCase):
     URL = 'http://example.com/' + GIST
+    NOT_A_GIST = 'Alice has a cat'
 
     @mock.patch.object(__unit__, 'run_gist_url')
     def test_url(self, mock_run_gist_url):
@@ -36,6 +37,14 @@ class RunGist(TestCase):
     def test_name(self, mock_run_named_gist):
         __unit__.run_gist(GIST)
         mock_run_named_gist.assert_called_once_with(GIST, ())
+
+    def test_unknown(self):
+        with self.assertRaises(ValueError) as r:
+            __unit__.run_gist(self.NOT_A_GIST)
+
+        msg = str(r.exception)
+        self.assertIn("unrecognized", msg)
+        self.assertIn(self.NOT_A_GIST, msg)
 
 
 @mock.patch.object(__unit__, 'ensure_gist', new=mock.Mock())
