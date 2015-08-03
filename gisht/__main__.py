@@ -42,11 +42,11 @@ def main(argv=sys.argv):
 
     # if we are to do something that requires cloned gist,
     # make sure it exists
+    is_url = bool(furl(gist).host)
     if args.command in (GistCommand.RUN,
                         GistCommand.PRINT,
-                        GistCommand.WHICH):
-        if not furl(gist).host:
-            ensure_gist(gist, local=args.local)
+                        GistCommand.WHICH) and not is_url:
+        ensure_gist(gist, local=args.local)
 
     # do with the gist what the user has requested (default: run it)
     if args.command == GistCommand.RUN:
@@ -57,6 +57,12 @@ def main(argv=sys.argv):
         if gist_args:
             error("gist arguments are only allowed when running the gist",
                   exitcode=os.EX_USAGE)
+        if is_url:
+            # TODO(xion): lift that limitation; best way is probably to
+            # create a "gist object" than can be owner/name, ID, or URL
+            error("URLs are only allowed when running the gist",
+                  exitcode=os.EX_USAGE)
+
         if args.command == GistCommand.WHICH:
             output_gist_binary_path(gist)
         elif args.command == GistCommand.PRINT:
