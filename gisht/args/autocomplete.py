@@ -3,6 +3,7 @@ Module with logic for generating autocomplete suggestions
 to command line arguments.
 """
 import argcomplete
+from furl import furl
 import requests
 
 from gisht import BIN_DIR
@@ -31,6 +32,11 @@ def gist_completer(prefix, parsed_args, **kwargs):
 
     :return: Iterable of possible completions
     """
+    # if the user is typing a gist URL, don't bother trying to autocomplete
+    url = furl(prefix)
+    if url.scheme or url.host:
+        return ()
+
     results = set()
 
     # start with the locally available gists, possibly including entries

@@ -54,7 +54,7 @@ def add_gist_group(parser):
 
     group.add_argument('gist', type=gist,
                        help="GitHub gist, specified as <owner>/<name> "
-                            "(e.g. Octocat/foo)",
+                            "(e.g. Octocat/foo), or a GitHub URL",
                        metavar="GIST").completer = gist_completer
 
     fetch_group = group.add_mutually_exclusive_group()
