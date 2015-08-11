@@ -19,7 +19,7 @@ class GistCommand(Enum):
     #: Print the complete source code of the gist's binary.
     PRINT = 'print'
 
-    #: Open thr gist's HTML page (on GitHub) in the default web browser.
+    #: Open the gist's HTML page (on GitHub) in the default web browser.
     OPEN = 'open'
 
     #: Display summary information about the gist.
