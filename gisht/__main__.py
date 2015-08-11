@@ -63,14 +63,16 @@ def main(argv=sys.argv):
             error("URLs are only allowed when running the gist",
                   exitcode=os.EX_USAGE)
 
-        if args.command == GistCommand.WHICH:
-            output_gist_binary_path(gist)
-        elif args.command == GistCommand.PRINT:
-            print_gist(gist)
-        elif args.command == GistCommand.OPEN:
-            open_gist_page(gist)
-        elif args.command == GistCommand.INFO:
-            show_gist_info(gist)
+        command_func = {
+            GistCommand.WHICH: output_gist_binary_path,
+            GistCommand.PRINT: print_gist,
+            GistCommand.OPEN: open_gist_page,
+            GistCommand.INFO: show_gist_info,
+        }.get(args.command)
+
+        assert command_func is not None, (
+            "unsupported gist command: %s" % args.command)
+        command_func(gist)
 
 
 def setup_logging(level):
