@@ -1,5 +1,5 @@
 """
-Module defining data types used in command line parsing.
+Module defining data types used throughout the application.
 """
 from enum import Enum
 

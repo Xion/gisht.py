@@ -6,8 +6,8 @@ import argparse
 from taipan.testing import before, expectedFailure
 
 import gisht.args as __unit__
-from gisht.args.data import GistCommand
 from gisht.args.parser import LogLevelAction
+from gisht.data import GistCommand
 from tests import TestCase
 
 

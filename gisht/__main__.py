@@ -13,7 +13,7 @@ from furl import furl
 
 from gisht import APP_DIR, flags, logger
 from gisht.args import parse_argv
-from gisht.args.data import GistCommand
+from gisht.data import GistCommand
 from gisht.gists import (ensure_gist,
                          open_gist_page, output_gist_binary_path,
                          print_gist, run_gist, show_gist_info)

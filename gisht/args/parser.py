@@ -9,7 +9,7 @@ from furl import furl
 
 from gisht import __version__
 from gisht.args.autocomplete import gist_completer
-from gisht.args.data import GistCommand
+from gisht.data import GistCommand
 
 
 __all__ = ['create_argv_parser']
