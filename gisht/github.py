@@ -6,7 +6,7 @@ from collections import OrderedDict
 import requests
 
 from gisht import CACHE_DIR, flags, logger
-from gisht.args.data import GistCommand
+from gisht.data import GistCommand
 from gisht.ext import CachedHammock
 from gisht.util import error
 
