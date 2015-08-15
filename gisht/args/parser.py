@@ -5,11 +5,9 @@ import argparse
 from itertools import chain
 import logging
 
-from furl import furl
-
 from gisht import __version__
 from gisht.args.autocomplete import gist_completer
-from gisht.data import GistCommand
+from gisht.data import Gist, GistError, GistCommand
 
 
 __all__ = ['create_argv_parser']
@@ -73,22 +71,10 @@ def add_gist_group(parser):
 
 def gist(value):
     """Converter/validator for the GIST command line argument."""
-    # TODO(xion): create a "value type" for gist identifier
-    # (which can be owner/name or full URL) so that we don't have to repeat
-    # the logic here, in __main__, and in .gists.run
-    if furl(value).host:
-        return value
-
     try:
-        owner, gist_name = value.split('/')
-    except ValueError:
-        raise argparse.ArgumentTypeError(
-            "%r is not a valid gist reference; try '<owner>/`<name>`" % value)
-    if owner and gist_name:
-        return value
-    else:
-        raise argparse.ArgumentTypeError(
-            "neither gist owner or name can be empty (got %r)" % (value,))
+        return Gist(value)
+    except GistError as e:
+        raise argparse.ArgumentTypeError(str(e))
 
 
 # Gist command

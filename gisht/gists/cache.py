@@ -7,6 +7,7 @@ import stat
 import requests
 
 from gisht import BIN_DIR, GISTS_DIR, logger
+from gisht.data import Gist
 from gisht.github import iter_gists
 from gisht.util import ensure_path, error, fatal, join, path_vector, run
 
@@ -17,11 +18,14 @@ __all__ = ['ensure_gist', 'get_gist_id']
 def ensure_gist(gist, local=False):
     """Ensure that given gist is downloaded & cached.
 
-    :param gist: Gist as owner/name string
+    :param gist: Gist as owner/name string, or :class:`Gist` object
 
     This, of course, may mean downloading the gist if it hasn't been before,
     or doing nothing if it has.
     """
+    if isinstance(gist, Gist):
+        gist = gist.ref
+
     if gist_exists(gist):
         logger.debug("gist %s found among already downloaded gists", gist)
         if local is False:
@@ -44,7 +48,15 @@ def ensure_gist(gist, local=False):
 
 
 def get_gist_id(gist):
-    """Convert the gist specified by owner/name to gist ID."""
+    """Convert the gist specified by owner/name to gist ID.
+    :param gist: Gist as owner/name string, or :class:`Gist` object
+    :return: Gist ID
+    """
+    if isinstance(gist, Gist):
+        if gist.id:
+            return gist.id
+        gist = gist.ref
+
     if not gist_exists(gist):
         fatal("unknown gist %s")
 

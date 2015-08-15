@@ -57,7 +57,7 @@ class ParseArgv(TestCase):
 
     def test_gist__valid(self):
         args = self._invoke(self.GIST)
-        self.assertEquals(self.GIST, args.gist)
+        self.assertEquals(self.GIST, args.gist.ref)
 
     def test_command__default(self):
         args = self._invoke(self.GIST)

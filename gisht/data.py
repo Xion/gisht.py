@@ -21,6 +21,9 @@ class Gist(object):
     """
     __slots__ = ('_id', '_name', '_owner', '_url')
 
+    #: Unique identifier of the gist in GitHub.
+    id = property(lambda self: self._id)
+
     #: URL to the GitHub page of the gist.
     url = property(lambda self: self._url)
 
@@ -34,13 +37,21 @@ class Gist(object):
     #: it IS possible for a single owner to have two gists with the same name.
     name = property(lambda self: self._name)
 
-    #: Unique identifier of the gist in GitHub.
-    id = property(lambda self: self._id)
+    @property
+    def ref(self):
+        """Gist reference, i.e. <owner>/<name>.
+
+        This is the way GitHub entitles gist pages, and the typical way user
+        identifies the gist to run when invoking the application.
+        """
+        if not (self._owner and self._name):
+            return None
+        return self._owner + "/" + self._name
 
     def __init__(self, *args):
         """Constructor.
 
-        Accept either a single argument that's a gist ID or URL,
+        Accepts either a single argument that's a gist URL,
         or two arguments: owner & gist name.
         """
         self._url = None
@@ -49,16 +60,24 @@ class Gist(object):
         self._id = None
 
         if len(args) == 1:
-            self._init_from_ref(args[0])
+            if isinstance(args[0], Gist):
+                self._init_from_other(args[0])
+            else:
+                self._init_from_ref(args[0])
         elif len(args) == 2:
             self._init_from_name(*args)
         else:
             raise ValueError(
                 "expected one or two arguments, got %d instead" % len(args))
 
+    def _init_from_other(self, gist):
+        """Initialize from another :class:`Gist` object."""
+        for attr in Gist.__slots__:
+            setattr(self, attr, getattr(gist, attr))
+
     def _init_from_ref(self, ref):
         """Initialize from gist reference,
-        which can be an <owner>/<name> string, a gist ID, or a full gist URL.
+        which can be an <owner>/<name> string, or a full gist URL.
         """
         if furl(ref).host:
             self._init_from_url(ref)
@@ -70,13 +89,13 @@ class Gist(object):
                 raise GistError("%r is not a valid gist reference; "
                                 "try '<owner>/`<name>`" % ref)
         else:
-            self._id = ref
+            raise GistError("unrecognized format of gist reference: %r" % ref)
 
     def _init_from_url(self, url):
         """Initialize from gist URL."""
         url = furl(url)
-        if url.host != self.GITHUB_GISTS_HOST:
-            raise GistError("unrecognized gist URL domains: %s" % url.host)
+        if url.host != GITHUB_GISTS_HOST:
+            raise GistError("unrecognized gist URL domain: %s" % url.host)
 
         self._url = url
         try:
@@ -86,6 +105,10 @@ class Gist(object):
 
     def _init_from_name(self, owner, name):
         """Initialize from gist's owner and name."""
+        if not (owner and name):
+            raise GistError("neither gist owner or name "
+                            "can be empty (got %r)" % "/".join((owner, name)))
+
         self._owner = owner
         self._name = name
 

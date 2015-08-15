@@ -9,8 +9,6 @@ import logging
 import os
 import sys
 
-from furl import furl
-
 from gisht import APP_DIR, flags, logger
 from gisht.args import parse_argv
 from gisht.data import GistCommand
@@ -42,10 +40,9 @@ def main(argv=sys.argv):
 
     # if we are to do something that requires cloned gist,
     # make sure it exists
-    is_url = bool(furl(gist).host)
     if args.command in (GistCommand.RUN,
                         GistCommand.PRINT,
-                        GistCommand.WHICH) and not is_url:
+                        GistCommand.WHICH) and not gist.url:
         ensure_gist(gist, local=args.local)
 
     # do with the gist what the user has requested (default: run it)
@@ -57,9 +54,8 @@ def main(argv=sys.argv):
         if gist_args:
             error("gist arguments are only allowed when running the gist",
                   exitcode=os.EX_USAGE)
-        if is_url:
-            # TODO(xion): lift that limitation; best way is probably to
-            # create a "gist object" than can be owner/name, ID, or URL
+        if gist.url:
+            # TODO(xion): lift that limitation
             error("URLs are only allowed when running the gist",
                   exitcode=os.EX_USAGE)
 
