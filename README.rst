@@ -34,7 +34,17 @@ Magic!
 Installation
 ~~~~~~~~~~~~
 
-Install *gisht*  using *pip*, the Python package manager::
+OS X
+----
+
+You can install *gisht* using Homebrew::
+
+    brew install https://raw.githubusercontent.com/Xion/gisht/master/gisht.rb
+
+Other systems
+-------------
+
+Install *gisht* using *pip*, the Python package manager::
 
     pip install gisht
 
