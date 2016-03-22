@@ -76,7 +76,7 @@ class GitHub(CachedHammock):
         if flags.local:
             error("can't access GitHub path /%s in --local mode", path)
 
-    def on_cache_hit(self, path, content):
+    def _on_cache_hit(self, path, content):
         if flags.local is False:
             return False  # bypass the cache
 
