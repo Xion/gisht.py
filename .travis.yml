@@ -12,7 +12,5 @@ os:
   - osx
 
 sudo: false
-install:
-  - pip install -e .
-  - pip install -r requirements-test.txt
-script: py.test
+install: pip install tox-travis
+script: tox
