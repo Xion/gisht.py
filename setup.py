@@ -38,7 +38,6 @@ def read_tags(filename):
         target = node.targets[0]
         if type(target) is not ast.Name:
             continue
-
         if not (target.id.startswith('__') and target.id.endswith('__')):
             continue
 
@@ -80,12 +79,12 @@ def read_requirements(filename='requirements.txt'):
 
 # setup() call
 
+tags = read_tags(os.path.join('gisht', '__init__.py'))
+__doc__ = __doc__.format(**tags)
+
 install_requires = read_requirements()
 if sys.version_info < (3, 4):
     install_requires.extend(read_requirements('py33'))
-
-tags = read_tags(os.path.join('gisht', '__init__.py'))
-__doc__ = __doc__.format(**tags)
 
 setup(
     name='gisht',
