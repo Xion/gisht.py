@@ -12,5 +12,19 @@ os:
   - osx
 
 sudo: false
+
+# Manually install Python from Homebrew on OSX,
+# because the toolchain doesn't seem to support Python there yet.
+#
+# Adapted from https://github.com/travis-ci/travis-ci/issues/2312#issuecomment-195620855
+#
+before_install: |
+  if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+    brew update
+    brew install python python3
+    virtualenv venv -p python
+    source venv/bin/activate
+  fi
+
 install: pip install tox-travis
 script: tox
