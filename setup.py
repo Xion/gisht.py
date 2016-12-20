@@ -92,7 +92,7 @@ setup(
     description=tags['description'],
     long_description=__doc__,
     author=tags['author'],
-    url="http://github.com/Xion/gisht",
+    url="http://github.com/Xion/gisht.py",
     license=tags['license'],
 
     platforms='posix',
