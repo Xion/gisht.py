@@ -3,6 +3,7 @@ gisht
 
 *Gists in the shell*
 
+*Note*: This project has been discontinued in favor of its `reimplementation in Rust <https://github.com/Xion/gisht>`_.
 
 |Version| |Development Status| |Python Versions| |License| |Build Status|
 
