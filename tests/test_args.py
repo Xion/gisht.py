@@ -2,8 +2,9 @@
 Tests for command-line handling code.
 """
 import argparse
+import sys
 
-from taipan.testing import before, expectedFailure
+from taipan.testing import before, expectedFailure, skipIf, skipUnless
 
 import gisht.args as __unit__
 from gisht.args.parser import LogLevelAction
@@ -71,16 +72,24 @@ class ParseArgv(TestCase):
         args = self._invoke('--run', self.GIST)
         self.assertEquals(GistCommand.RUN, args.command)
 
-    @expectedFailure
-    def test_action__multiple__duplicate(self):
-        # supplying the same action flag multiple times makes no sense
-        # and should be illegal. Unfortunately, there is no way to tell that
-        # to the ArgumentParser :-(
+    def do_test_action__multiple__duplicate(self):
+        # Supplying the same action flag multiple times makes no sense
+        # and should be illegal.
         with self.assertExit(2) as r:
             self._invoke('-r', '-r', self.GIST)
 
         self.assertIn("usage", r.stderr)
         self.assertIn('-r', r.stderr)
+
+    # Unfortunately, argparse below Python 3.4 doesn't seem to think so.
+    @skipIf(sys.version_info >= (3, 4), "requires Python 3.4+")
+    @expectedFailure
+    def test_action__multiple__duplicate__py2(self):
+        self.do_test_action__multiple__duplicate()
+
+    @skipUnless(sys.version_info >= (3, 4), "requires Python <3.4")
+    def test_action__multiple__duplicate__p34(self):
+        self.do_test_action__multiple__duplicate()
 
     def test_action__multiple__distinct(self):
         with self.assertExit(2) as r:
